@@ -1,7 +1,9 @@
 package com.example.backend.controller;
 
+
 import com.example.backend.dto.SPCTDTO;
 import com.example.backend.entity.SanPhamChiTiet;
+
 
 import com.example.backend.service.SPCTService;
 import jakarta.validation.Valid;
@@ -20,20 +22,23 @@ public class SPCTRestController {
     private SPCTService service;
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<SPCTDTO>> getAll() {
+
+    public ResponseEntity<List<SPCTDTO>> getAllForOffline() {
         return ResponseEntity.ok(service.getAllForOffline());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SPCTDTO> getById(@PathVariable Integer id) {
+    public ResponseEntity<SPCTDTO> getSPCTDTOById(@PathVariable Integer id) {
         return ResponseEntity.ok(service.getSPCTDTOById(id));
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<SPCTDTO>> getByTen(@RequestParam String keyword) {
-        return ResponseEntity.ok( service.searchByTenSanPham(keyword));
+        return ResponseEntity.ok(service.searchByTenSanPham(keyword));
+
     }
 
+    
     @PostMapping("/add")
     public ResponseEntity<SanPhamChiTiet> create(@RequestBody @Valid SanPhamChiTiet s) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(s));

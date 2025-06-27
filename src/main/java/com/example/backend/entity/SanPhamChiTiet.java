@@ -44,6 +44,12 @@ public class SanPhamChiTiet {
     @Column(name = "TrangThai")
     private Integer trangThai;
 
+
     @Column(name = "GiaBan")
     private Double giaBan;
+
+
+
+
+
 }

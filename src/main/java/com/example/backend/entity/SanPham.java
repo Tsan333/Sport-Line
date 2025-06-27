@@ -20,6 +20,7 @@ public class SanPham {
     @Column(name = "Id")
     private Integer id;
 
+
     @Column(name = "TenSanPham")
     private String tenSanPham;
 

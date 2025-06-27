@@ -1,6 +1,8 @@
+
 package com.example.backend.service;
 
 import com.example.backend.dto.SPCTDTO;
+
 import com.example.backend.entity.SanPhamChiTiet;
 
 import com.example.backend.repository.SanPhamChiTietRepository;
@@ -20,6 +22,7 @@ public class SPCTService {
         return spcti.findAll();
     }
 
+
     public List<SPCTDTO> getAllForOffline() {
         return spcti.getAllSPCTDTO();
     }
@@ -31,6 +34,12 @@ public class SPCTService {
 
     public List<SPCTDTO> searchByTenSanPham(String keyword) {
         return spcti.searchByTenSanPham(keyword);
+    }
+
+
+    public SanPhamChiTiet findById(Integer id) {
+        return spcti.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
     }
 
     public SanPhamChiTiet create(SanPhamChiTiet s) {

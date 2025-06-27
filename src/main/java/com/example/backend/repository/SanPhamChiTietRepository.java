@@ -1,19 +1,21 @@
 package com.example.backend.repository;
 
+
 import com.example.backend.dto.SPCTDTO;
 import com.example.backend.entity.SanPhamChiTiet;
-import jakarta.persistence.criteria.From;
-import org.hibernate.mapping.Join;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
 import java.util.Optional;
 
 @Repository
 public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,Integer> {
+
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
