@@ -38,7 +38,7 @@ public class SPCTRestController {
 
     }
 
-    
+
     @PostMapping("/add")
     public ResponseEntity<SanPhamChiTiet> create(@RequestBody @Valid SanPhamChiTiet s) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(s));

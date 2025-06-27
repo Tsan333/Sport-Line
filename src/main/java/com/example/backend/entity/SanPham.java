@@ -39,6 +39,14 @@ public class SanPham {
     @JoinColumn(name = "IdKhuyenMai", referencedColumnName = "Id")
     private KhuyenMai khuyenMai;
 
+    @ManyToOne
+    @JoinColumn(name = "IdChatLieu", referencedColumnName = "Id")
+    private ChatLieu chatLieu;
+
+    @ManyToOne
+    @JoinColumn(name = "IdDanhMuc", referencedColumnName = "Id")
+    private DanhMuc danhMuc;
+
     @Column(name = "Images")
     private String imanges;
 
