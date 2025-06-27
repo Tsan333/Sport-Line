@@ -24,14 +24,13 @@ public class SPCTService {
         return spcti.getAllSPCTDTO();
     }
 
-    public SanPhamChiTiet getById(Integer id) {
-        return spcti.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
-    }
-
     public SPCTDTO getSPCTDTOById(Integer id) {
         return spcti.getSPCTDTOById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
+    }
+
+    public List<SPCTDTO> searchByTenSanPham(String keyword) {
+        return spcti.searchByTenSanPham(keyword);
     }
 
     public SanPhamChiTiet create(SanPhamChiTiet s) {
@@ -40,7 +39,7 @@ public class SPCTService {
     }
 
     public SanPhamChiTiet update(Integer id, SanPhamChiTiet s) {
-        SanPhamChiTiet old = getById(id);
+        SanPhamChiTiet old = spcti.getById(id);
         s.setId(old.getId());
         return spcti.save(s);
     }

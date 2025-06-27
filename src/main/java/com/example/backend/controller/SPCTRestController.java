@@ -29,6 +29,11 @@ public class SPCTRestController {
         return ResponseEntity.ok(service.getSPCTDTOById(id));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<SPCTDTO>> getByTen(@RequestParam String keyword) {
+        return ResponseEntity.ok( service.searchByTenSanPham(keyword));
+    }
+
     @PostMapping("/add")
     public ResponseEntity<SanPhamChiTiet> create(@RequestBody @Valid SanPhamChiTiet s) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(s));

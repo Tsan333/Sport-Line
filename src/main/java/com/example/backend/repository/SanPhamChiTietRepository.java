@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.From;
 import org.hibernate.mapping.Join;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,4 +50,24 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
             """
     )
     Optional<SPCTDTO> getSPCTDTOById(Integer id);
+
+    @Query(
+            """
+            SELECT new com.example.backend.dto.SPCTDTO(
+                spct.id,
+                sp.tenSanPham,
+                spct.soLuong,
+                spct.giaBan,
+                kt.tenKichThuoc,
+                ms.tenMauSac
+            )
+            FROM SanPhamChiTiet spct
+            JOIN spct.sanPham sp
+            JOIN spct.kichThuoc kt
+            JOIN spct.mauSac ms
+            WHERE LOWER(sp.tenSanPham) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            """
+    )
+    List<SPCTDTO> searchByTenSanPham(@Param("keyword") String keyword);
+
 }

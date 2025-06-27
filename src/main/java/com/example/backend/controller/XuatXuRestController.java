@@ -1,8 +1,9 @@
 package com.example.backend.controller;
 
-import com.example.backend.Service.XuatXuService;
+
 import com.example.backend.entity.XuatXu;
 
+import com.example.backend.service.XuatXuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,10 @@
 package com.example.backend.controller;
 
 
-import com.example.backend.Service.MauSacService;
+
 import com.example.backend.entity.MauSac;
 
+import com.example.backend.service.MauSacService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

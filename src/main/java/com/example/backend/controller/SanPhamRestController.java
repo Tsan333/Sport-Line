@@ -1,9 +1,9 @@
 package com.example.backend.controller;
 
 
-import com.example.backend.Service.SanPhamService;
 import com.example.backend.entity.SanPham;
 
+import com.example.backend.service.SanPhamService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

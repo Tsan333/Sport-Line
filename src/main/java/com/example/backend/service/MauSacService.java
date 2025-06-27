@@ -1,4 +1,4 @@
-package com.example.backend.Service;
+package com.example.backend.service;
 
 import com.example.backend.entity.MauSac;
 import com.example.backend.repository.MauSacInterface;
