@@ -9,6 +9,7 @@ import com.example.backend.repository.KhuyenMaiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.util.List;
 
 @Service
@@ -70,8 +71,8 @@ public class KhuyenMaiService {
         km.setMoTa(dto.getMoTa());
         km.setGiaTri(dto.getGiaTri());
         km.setDonToiThieu(dto.getDonToiThieu());
-        km.setNgayBatDau(dto.getNgayBatDau());
-        km.setNgayKetThuc(dto.getNgayKetThuc());
+        km.setNgayBatDau((Date) dto.getNgayBatDau());
+        km.setNgayKetThuc((Date) dto.getNgayKetThuc());
         km.setTrangThai(dto.getTrangThai());
 
         return convertDTO(khuyenMaiRepository.save(km));
@@ -97,8 +98,8 @@ public class KhuyenMaiService {
                     km.setMoTa(dto.getMoTa());
                     km.setGiaTri(dto.getGiaTri());
                     km.setDonToiThieu(dto.getDonToiThieu());
-                    km.setNgayBatDau(dto.getNgayBatDau());
-                    km.setNgayKetThuc(dto.getNgayKetThuc());
+                    km.setNgayBatDau((Date) dto.getNgayBatDau());
+                    km.setNgayKetThuc((Date) dto.getNgayKetThuc());
                     km.setTrangThai(dto.getTrangThai());
 
                     return convertDTO(khuyenMaiRepository.save(km));

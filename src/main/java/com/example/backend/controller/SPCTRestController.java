@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 
 import com.example.backend.dto.SPCTDTO;
+import com.example.backend.dto.SPCTRequest;
 import com.example.backend.entity.SanPhamChiTiet;
 
 
@@ -22,7 +23,6 @@ public class SPCTRestController {
     private SPCTService service;
 
     @GetMapping("/getAll")
-
     public ResponseEntity<List<SPCTDTO>> getAllForOffline() {
         return ResponseEntity.ok(service.getAllForOffline());
     }
@@ -38,11 +38,18 @@ public class SPCTRestController {
 
     }
 
-
-    @PostMapping("/add")
-    public ResponseEntity<SanPhamChiTiet> create(@RequestBody @Valid SanPhamChiTiet s) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(s));
+    @PostMapping("/them/{idSanPham}")
+    public ResponseEntity<?> themBienThe(
+            @PathVariable Integer idSanPham,
+            @RequestBody SPCTRequest request) {
+        try {
+            SanPhamChiTiet spct = service.createSanPhamChiTiet(idSanPham, request);
+            return ResponseEntity.ok(spct);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<SanPhamChiTiet> update(@PathVariable Integer id,

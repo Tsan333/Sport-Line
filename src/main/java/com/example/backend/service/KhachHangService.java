@@ -9,6 +9,7 @@ import com.example.backend.repository.KhachHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.util.List;
 
 
@@ -80,7 +81,7 @@ public class KhachHangService {
         KhachHang kh = new KhachHang();
         kh.setTenKhachHang(dto.getTenKhachHang());
         kh.setEmail(dto.getEmail());
-        kh.setNgaySinh(dto.getNgaySinh());
+        kh.setNgaySinh((Date) dto.getNgaySinh());
         kh.setGioiTinh(dto.getGioiTinh());
         kh.setDiaChi(dto.getDiaChi());
         kh.setSoDienThoai(dto.getSoDienThoai());
@@ -105,7 +106,7 @@ public class KhachHangService {
                 .map(kh -> {
                     kh.setTenKhachHang(dto.getTenKhachHang());
                     kh.setEmail(dto.getEmail());
-                    kh.setNgaySinh(dto.getNgaySinh());
+                    kh.setNgaySinh((Date) dto.getNgaySinh());
                     kh.setGioiTinh(dto.getGioiTinh());
                     kh.setDiaChi(dto.getDiaChi());
                     kh.setSoDienThoai(dto.getSoDienThoai());

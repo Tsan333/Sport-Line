@@ -10,12 +10,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SPCTDTO {
-    private Integer id;
     private String tenSanPham;
     private Integer soLuong;
     private Double giaBan;
     private String kichThuoc;
     private String mauSac;
-
-
 }

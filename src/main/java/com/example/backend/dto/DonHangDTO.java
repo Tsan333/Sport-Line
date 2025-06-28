@@ -19,8 +19,6 @@ public class DonHangDTO {
 
     private Integer id;
 
-
-
     private Integer  idnhanVien;
 
 

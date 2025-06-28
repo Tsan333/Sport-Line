@@ -2,6 +2,7 @@ package com.example.backend.repository;
 
 
 import com.example.backend.dto.SPCTDTO;
+import com.example.backend.dto.SPCTRequest;
 import com.example.backend.entity.SanPhamChiTiet;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
-                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
@@ -37,7 +37,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
-                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
@@ -56,7 +55,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
-                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
