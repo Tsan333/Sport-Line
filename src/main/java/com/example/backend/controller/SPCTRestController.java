@@ -28,7 +28,7 @@ public class SPCTRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SPCTDTO> getSPCTDTOById(@PathVariable Integer id) {
+    public ResponseEntity<List<SanPhamChiTiet> > getSPCTDTOById(@PathVariable Integer id) {
         return ResponseEntity.ok(service.getSPCTDTOById(id));
     }
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SPCTService {
@@ -27,9 +28,8 @@ public class SPCTService {
         return spcti.getAllSPCTDTO();
     }
 
-    public SPCTDTO getSPCTDTOById(Integer id) {
-        return spcti.getSPCTDTOById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
+    public List<SanPhamChiTiet> getSPCTDTOById(Integer id) {
+        return spcti.findBySanPham_Id(id);
     }
 
     public List<SPCTDTO> searchByTenSanPham(String keyword) {
