@@ -41,6 +41,10 @@ public class DonHangChiTietService {
                 .orElse(null);
     }
 
+    public List<DonHangChiTietDTO> getDonHangById(Integer id) {
+        return chiTietRepository.findByDonHangId(id);
+    }
+
     public DonHangChiTietDTO create(DonHangChiTietDTO dto) {
         DonHangChiTiet chiTiet = convertToEntity(dto);
         return convertToDTO(chiTietRepository.save(chiTiet));

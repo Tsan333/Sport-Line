@@ -31,6 +31,11 @@ public class DonHangChiTietController {
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/donhangchitiet/don-hang/{id}")
+    public ResponseEntity<List<DonHangChiTietDTO>> getByIdDonHang(@PathVariable Integer id){
+        return ResponseEntity.ok(chiTietService.getDonHangById(id));
+    }
+
     @PostMapping("/donhangchitiet/create")
     public ResponseEntity<DonHangChiTietDTO> create(@RequestBody DonHangChiTietDTO dto) {
         return ResponseEntity.ok(chiTietService.create(dto));

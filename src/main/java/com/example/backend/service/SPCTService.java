@@ -4,6 +4,7 @@ package com.example.backend.service;
 import com.example.backend.dto.SPCTDTO;
 
 import com.example.backend.dto.SPCTRequest;
+import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.KichThuoc;
 import com.example.backend.entity.MauSac;
 import com.example.backend.entity.SanPham;
@@ -68,9 +69,12 @@ public class SPCTService {
         return spcti.getAllSPCTDTO();
     }
 
-    public SPCTDTO getSPCTDTOById(Integer id) {
-        return spcti.getSPCTDTOById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
+    public List<SanPhamDonHangResponse> getSanPhamByDonHang(Integer idDonHang) {
+        return spcti.getSanPhamByDonHang(idDonHang);
+    }
+
+    public List<SPCTDTO> getSPCTDTOByIdSP(Integer id) {
+        return spcti.getSPCTDTOByIdSP(id);
     }
 
     public List<SPCTDTO> searchByTenSanPham(String keyword) {

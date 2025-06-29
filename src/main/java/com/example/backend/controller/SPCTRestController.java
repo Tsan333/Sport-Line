@@ -3,6 +3,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.SPCTDTO;
 import com.example.backend.dto.SPCTRequest;
+import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.SanPhamChiTiet;
 
 
@@ -28,14 +29,18 @@ public class SPCTRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SPCTDTO> getSPCTDTOById(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.getSPCTDTOById(id));
+    public ResponseEntity<List<SPCTDTO>> getSPCTDTOByIdSP(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.getSPCTDTOByIdSP(id));
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<SPCTDTO>> getByTen(@RequestParam String keyword) {
         return ResponseEntity.ok(service.searchByTenSanPham(keyword));
+    }
 
+    @GetMapping("/san-pham/{id}")
+    public ResponseEntity<List<SanPhamDonHangResponse>> getSanPhamByDonHang(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(service.getSanPhamByDonHang(id));
     }
 
     @PostMapping("/them/{idSanPham}")
