@@ -37,10 +37,10 @@ public class DonHangDTO {
     private String loaiDonHang;
 
 
-    private String trangThai;
+    private Integer trangThai;
 
 
-    private double tongTien;
+    private Double tongTien;
 
 
     private Double tongTienGiamGia;

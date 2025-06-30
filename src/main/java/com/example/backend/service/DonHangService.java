@@ -47,10 +47,42 @@ public class DonHangService {
                 .orElse(null);
     }
 
+    public List<DonHangDTO> getByTrangThai(Integer trangThai) {
+        return donHangRepository.getAllByTrangThai(trangThai)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     public DonHangDTO create(DonHangDTO dto) {
         DonHang donHang = convertToEntity(dto);
         return convertToDTO(donHangRepository.save(donHang));
     }
+
+
+
+    public DonHangDTO huyDonHang(Integer id) {
+        Optional<DonHang> optional = donHangRepository.findById(id);
+        if (optional.isPresent()) {
+            DonHang donHang = optional.get();
+            donHang.setTrangThai(1); // Hủy đơn hàng
+            return convertToDTO(donHangRepository.save(donHang));
+        }
+        return null;
+    }
+
+
+    public DonHangDTO xacNhanDonHang(Integer id) {
+        Optional<DonHang> optional = donHangRepository.findById(id);
+        if (optional.isPresent()) {
+            DonHang donHang = optional.get();
+            donHang.setTrangThai(1); // Hủy đơn hàng
+            return convertToDTO(donHangRepository.save(donHang));
+        }
+        return null;
+    }
+
+
 
     public DonHangDTO update(int id, DonHangDTO dto) {
         Optional<DonHang> optional = donHangRepository.findById(id);
@@ -61,6 +93,7 @@ public class DonHangService {
         }
         return null;
     }
+
     @Transactional
     public void delete(Integer id) {
         Optional<DonHang> donHangOptional = donHangRepository.findById(id);

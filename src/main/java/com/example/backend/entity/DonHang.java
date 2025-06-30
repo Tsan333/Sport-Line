@@ -17,7 +17,6 @@ public class DonHang {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-
     @ManyToOne
     @JoinColumn(name = "idNhanVien")
     private NhanVien nhanVien;
@@ -40,7 +39,7 @@ public class DonHang {
     private String loaiDonHang;
 
     @Column(name="TrangThai")
-    private String trangThai;
+    private Integer trangThai;
 
     @Column(name="TongTien")
     private Double tongTien;

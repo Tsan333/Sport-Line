@@ -29,9 +29,25 @@ public class DonHangController {
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/donhang/hoanthanh")
+    public ResponseEntity<List<DonHangDTO>> hoanThanh() {
+        return ResponseEntity.ok(donHangService.getByTrangThai(1));
+    }
+
+    @GetMapping("/donhang/chuahoanthanh")
+    public ResponseEntity<List<DonHangDTO>> chuahoanThanh() {
+        return ResponseEntity.ok(donHangService.getByTrangThai(0));
+    }
+
     @PostMapping("/donhang/create")
     public ResponseEntity<DonHangDTO> create(@RequestBody DonHangDTO dto) {
         return ResponseEntity.ok(donHangService.create(dto));
+    }
+
+    @PutMapping("/donhang/xacnhanthanhtoan/{id}")
+    public ResponseEntity<DonHangDTO> xacnhanthanhtoan(@PathVariable Integer id) {
+        DonHangDTO updated = donHangService.xacNhanDonHang(id);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/donhang/update/{id}")
