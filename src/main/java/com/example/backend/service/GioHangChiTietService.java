@@ -16,9 +16,6 @@ import java.util.List;
 @Service
 public class GioHangChiTietService {
 
-
-
-
     @Autowired
     private GioHangChiTietRepo repo;
 
@@ -83,7 +80,4 @@ public class GioHangChiTietService {
     public double tongTien(Integer idKhachHang) {
         return repo.tinhTongTienGioHang(idKhachHang);
     }
-
-
-
 }

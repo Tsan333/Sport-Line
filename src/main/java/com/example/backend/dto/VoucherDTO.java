@@ -1,4 +1,3 @@
-
 package com.example.backend.dto;
 
 import lombok.AllArgsConstructor;
@@ -6,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -19,11 +17,9 @@ public class VoucherDTO {
 
     private String maVoucher;
 
-
     private String tenVoucher;
 
     private String loaiVoucher;
-
 
     private String moTa;
 
@@ -37,10 +33,6 @@ public class VoucherDTO {
 
     private LocalDateTime ngayKetThuc;
 
-    private LocalDate ngayTao;
-
     private Integer trangThai;
-
-
 }
 

@@ -109,4 +109,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     )
     List<SPCTDTO> searchByTenSanPham(@Param("keyword") String keyword);
 
+    List<SanPhamChiTiet> findByKhuyenMai_Id(Integer idKhuyetMai);
+
 }

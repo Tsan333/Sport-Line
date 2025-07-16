@@ -3,11 +3,17 @@ package com.example.backend.service;
 
 
 import com.example.backend.dto.VoucherDTO;
+import com.example.backend.entity.DonHang;
 import com.example.backend.entity.Voucher;
+import com.example.backend.repository.DonHangRepository;
 import com.example.backend.repository.VoucherRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,6 +21,9 @@ public class VoucherService {
 
     @Autowired
     private VoucherRepository voucherRepository;
+
+    @Autowired
+    private DonHangRepository donHangRepository;
 
     public VoucherDTO convertDTO(Voucher voucher){
         return new VoucherDTO(
@@ -28,7 +37,6 @@ public class VoucherService {
                 voucher.getDonToiThieu(),
                 voucher.getNgayBatDau(),
                 voucher.getNgayKetThuc(),
-                voucher.getNgayTao(),
                 voucher.getTrangThai()
 
         );
@@ -48,7 +56,6 @@ public class VoucherService {
                         voucher.getDonToiThieu(),
                         voucher.getNgayBatDau(),
                         voucher.getNgayKetThuc(),
-                        voucher.getNgayTao(),
                         voucher.getTrangThai()
                 )).toList();
     }
@@ -67,7 +74,6 @@ public class VoucherService {
                         voucher.getDonToiThieu(),
                         voucher.getNgayBatDau(),
                         voucher.getNgayKetThuc(),
-                        voucher.getNgayTao(),
                         voucher.getTrangThai()
                 ))
                 .orElse(null);
@@ -85,14 +91,13 @@ public class VoucherService {
         v.setDonToiThieu(dto.getDonToiThieu());
         v.setNgayBatDau(dto.getNgayBatDau());
         v.setNgayKetThuc(dto.getNgayKetThuc());
-        v.setNgayTao(dto.getNgayTao());
         v.setTrangThai(dto.getTrangThai());
 
         return convertDTO(voucherRepository.save(v));
 
     }
 
-    // ham delete vouccher
+    // ham delete voucher
     public boolean delete(Integer id){
         if (voucherRepository.existsById(id)) {
             voucherRepository.deleteById(id);
@@ -114,7 +119,6 @@ public class VoucherService {
                     v.setDonToiThieu(dto.getDonToiThieu());
                     v.setNgayBatDau(dto.getNgayBatDau());
                     v.setNgayKetThuc(dto.getNgayKetThuc());
-                    v.setNgayTao(dto.getNgayTao());
                     v.setTrangThai(dto.getTrangThai());
 
                     return convertDTO(voucherRepository.save(v));
@@ -122,4 +126,113 @@ public class VoucherService {
                 .orElse(null);
     }
 
+    @Scheduled(fixedRate = 6000000) // Cập nhật mỗi 60 giây
+    public void updateActiveVoucher() {
+        updateVoucherActive();
+    }
+
+    /**
+     * Cập nhật trạng thái voucher:
+     * - Nếu đã hết hạn: trạng thái = 0
+     * - Nếu đang hoạt động: trạng thái = 1
+     * - Nếu chưa bắt đầu hoặc hết hạn: trạng thái = 0
+     */
+    @Transactional
+    public void updateVoucherActive() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Voucher> voucherList = voucherRepository.findAll();
+        List<Voucher> vouchersToUpdate = new ArrayList<>();
+        List<DonHang> donHangsToUpdate = new ArrayList<>();
+
+        for (Voucher v : voucherList) {
+            boolean isExpired = v.getNgayKetThuc().isBefore(now);
+            boolean isNotStarted = v.getNgayBatDau().isAfter(now);
+            boolean isOutOfStock = v.getSoLuong() != null && v.getSoLuong() == 0;
+
+            boolean isInvalid = isExpired || isNotStarted || isOutOfStock;
+            boolean isActive = !isInvalid;
+
+            List<DonHang> donHangsWithVoucher = donHangRepository.findAllByGiamGia_Id(v.getId());
+
+            if (isInvalid) {
+                for (DonHang dh : donHangsWithVoucher) {
+                    dh.setGiamGia(null);
+                    dh.setTongTienGiamGia(dh.getTongTien());
+                    donHangsToUpdate.add(dh);
+                }
+
+                if (v.getTrangThai() == null || v.getTrangThai() != 0) {
+                    v.setTrangThai(0);
+                    vouchersToUpdate.add(v);
+                }
+
+            } else if (isActive) {
+                if (v.getTrangThai() == null || v.getTrangThai() != 1) {
+                    v.setTrangThai(1);
+                    vouchersToUpdate.add(v);
+                }
+            }
+        }
+
+        if (!donHangsToUpdate.isEmpty()) {
+            donHangRepository.saveAll(donHangsToUpdate);
+        }
+
+        if (!vouchersToUpdate.isEmpty()) {
+            voucherRepository.saveAll(vouchersToUpdate);
+        }
+    }
+
+    public void updateVoucherForDonHang(DonHang dh, Integer idVoucher) {
+
+        Voucher voucher = voucherRepository.findById(idVoucher)
+                .orElseThrow(() -> new RuntimeException("Voucher không tồn tại"));
+
+        double tongTien = dh.getTongTien();
+
+        // Kiểm tra điều kiện áp dụng voucher
+        if (voucher.getTrangThai() == null || voucher.getTrangThai() != 1) {
+            dh.setGiamGia(null);
+            throw new RuntimeException("Voucher không hoạt động");
+        }
+
+        if (voucher.getSoLuong() == null || voucher.getSoLuong() <= 0) {
+            dh.setGiamGia(null);
+            throw new RuntimeException("Voucher đã hết lượt sử dụng");
+        }
+
+        if (voucher.getNgayBatDau().isAfter(LocalDateTime.now()) || voucher.getNgayKetThuc().isBefore(LocalDateTime.now())) {
+            dh.setGiamGia(null);
+            throw new RuntimeException("Voucher không còn hiệu lực theo thời gian");
+        }
+
+        if (voucher.getDonToiThieu() != null && tongTien < voucher.getDonToiThieu()) {
+            dh.setGiamGia(null);
+            throw new RuntimeException("Đơn hàng không đủ điều kiện áp dụng voucher");
+        }
+
+        // Gán voucher và tính lại tổng tiền giảm giá
+        dh.setGiamGia(voucher);
+        dh.setTongTienGiamGia(tinhTongTienSauGiam(dh.getTongTien(), voucher));
+
+        // Trừ số lượng nếu đơn hàng đã hoàn tất
+        if ("".equals(dh.getTrangThai())) {
+            voucher.setSoLuong(voucher.getSoLuong() - 1);
+            voucherRepository.save(voucher);
+        }
+    }
+
+    private double tinhTongTienSauGiam(double tongTien, Voucher voucher) {
+        double giam = 0.0;
+
+        if ("PHAN_TRAM".equalsIgnoreCase(voucher.getLoaiVoucher())) {
+            giam = tongTien * (voucher.getGiaTri() / 100);
+        } else if ("TIEN_MAT".equalsIgnoreCase(voucher.getLoaiVoucher())) {
+            giam = voucher.getGiaTri();
+        }
+
+        double result = tongTien - giam;
+        return result < 0 ? 0 : result;
+    }
 }

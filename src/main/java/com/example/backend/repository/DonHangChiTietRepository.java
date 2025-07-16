@@ -31,5 +31,6 @@ public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,I
 """)
     List<DonHangChiTietDTO> findByDonHangId(@Param("id") Integer id);
 
+    List<DonHangChiTiet> findEntityByDonHang_Id(Integer idDonHang);
 
 }

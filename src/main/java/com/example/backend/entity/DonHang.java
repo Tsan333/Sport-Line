@@ -17,6 +17,7 @@ public class DonHang {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+
     @ManyToOne
     @JoinColumn(name = "idNhanVien")
     private NhanVien nhanVien;
@@ -47,6 +48,18 @@ public class DonHang {
     @Column(name="TongTienGiamGia")
     private Double tongTienGiamGia;
 
-    @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(name="DiaChiGiaoHang")
+    private String diaChiGiaoHang;
+
+    @Column(name="SoDienThoaiGiaoHang")
+    private String soDienThoaiGiaoHang;
+
+    @Column(name="EmailGiaoHang")
+    private String emailGiaoHang;
+
+    @Column(name="TenNguoiNhan")
+    private String tenNguoiNhan;
+
+    @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<DonHangChiTiet> donHangChiTiets;
 }

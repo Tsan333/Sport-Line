@@ -25,7 +25,6 @@ public class SanPhamChiTiet {
     private Integer soLuong;
 
     @Column(name = "NgaySanXuat")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date ngaySanXuat;
 
     @ManyToOne
@@ -40,6 +39,10 @@ public class SanPhamChiTiet {
     @JoinColumn(name = "IdMauSac", referencedColumnName = "Id")
     private MauSac mauSac;
 
+    @ManyToOne
+    @JoinColumn(name = "IdKhuyenMai", referencedColumnName = "Id")
+    private KhuyenMai khuyenMai;
+
     @Column(name = "NgayTao")
     private LocalDateTime ngayTao;
 
@@ -48,4 +51,7 @@ public class SanPhamChiTiet {
 
     @Column(name = "GiaBan")
     private Double giaBan;
+
+    @Column(name = "GiaBanGiamGia")
+    private Double giaBanGiamGia;
 }
