@@ -21,9 +21,11 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
+                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
+                spct.giaBanGiamGia,
                 kt.tenKichThuoc,
                 ms.tenMauSac
             )
@@ -38,9 +40,11 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
+                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
+                spct.giaBanGiamGia,
                 kt.tenKichThuoc,
                 ms.tenMauSac
             )
@@ -75,9 +79,11 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
+                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
+                spct.giaBanGiamGia,
                 kt.tenKichThuoc,
                 ms.tenMauSac
             )
@@ -94,9 +100,11 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
     @Query(
             """
             SELECT new com.example.backend.dto.SPCTDTO(
+                spct.id,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
+                spct.giaBanGiamGia,
                 kt.tenKichThuoc,
                 ms.tenMauSac
             )

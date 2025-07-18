@@ -5,15 +5,9 @@ import com.example.backend.dto.SPCTDTO;
 
 import com.example.backend.dto.SPCTRequest;
 import com.example.backend.dto.SanPhamDonHangResponse;
-import com.example.backend.entity.KichThuoc;
-import com.example.backend.entity.MauSac;
-import com.example.backend.entity.SanPham;
-import com.example.backend.entity.SanPhamChiTiet;
+import com.example.backend.entity.*;
 
-import com.example.backend.repository.KichThuocInterface;
-import com.example.backend.repository.MauSacInterface;
-import com.example.backend.repository.SanPhamChiTietRepository;
-import com.example.backend.repository.SanPhamInterface;
+import com.example.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +29,12 @@ public class SPCTService {
 
     @Autowired
     private MauSacInterface msi;
+
+    @Autowired
+    private KhuyenMaiRepository khuyenMaiRepository;
+
+    @Autowired
+    private KhuyenMaiService khuyenMaiService;
 
     public SanPhamChiTiet createSanPhamChiTiet(Integer id,SPCTRequest request) {
         request.setIdSanPham(id);
@@ -71,6 +71,21 @@ public class SPCTService {
 
     public List<SanPhamDonHangResponse> getSanPhamByDonHang(Integer idDonHang) {
         return spcti.getSanPhamByDonHang(idDonHang);
+    }
+
+    public List<SanPhamChiTiet> addSanPhamDuocKhuyenMai(Integer idKhuyenMai, List<Integer> listIdSanPham) {
+        KhuyenMai khuyenMai = khuyenMaiRepository.findById(idKhuyenMai)
+                .orElseThrow(() -> new IllegalArgumentException("Khuyến mãi không tồn tại"));
+
+        List<SanPhamChiTiet> danhSachSanPham = spcti.findAllById(listIdSanPham);
+
+        for (SanPhamChiTiet sp : danhSachSanPham) {
+            sp.setKhuyenMai(khuyenMai);
+        }
+
+        khuyenMaiService.capNhatGiaKhuyenMaiChoDanhSach(danhSachSanPham);
+
+        return spcti.saveAll(danhSachSanPham);
     }
 
     public List<SPCTDTO> getSPCTDTOByIdSP(Integer id) {
