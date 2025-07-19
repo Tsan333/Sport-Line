@@ -24,6 +24,10 @@ public class ThuongHieuRestController {
     public List<ThuongHieu> getAll() {
         return thuongHieuService.getAll();
     }
+    @GetMapping("/getAllFull")
+    public List<ThuongHieu> getAllFull() {
+        return thuongHieuService.getAllFull();
+    }
 
     @GetMapping("/getById/{id}")
     public ThuongHieu getById(@PathVariable Integer id) {
@@ -38,6 +42,11 @@ public class ThuongHieuRestController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody ThuongHieu thuongHieu) {
         return thuongHieuService.update(id, thuongHieu);
+    }
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucThuongHieu(@PathVariable Integer id) {
+        thuongHieuService.khoiPhucThuongHieu(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/del/{id}")

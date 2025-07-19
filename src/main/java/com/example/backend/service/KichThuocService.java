@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.KichThuoc;
+import com.example.backend.entity.ThuongHieu;
 import com.example.backend.repository.KichThuocInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,9 @@ public class KichThuocService {
 
     public List<KichThuoc> getAll() {
         return kti.findAllByTrangThai(1);
+    }
+    public List<KichThuoc> getAlla2() {
+        return kti.findAll();
     }
 
     public KichThuoc getById(Integer id) {
@@ -58,6 +62,12 @@ public class KichThuocService {
         KichThuoc kichThuoc = optional.get();
         kichThuoc.setTrangThai(0);
         return ResponseEntity.ok(kti.save(kichThuoc));
+    }
+    public void khoiPhucKichThuoc(Integer id) {
+        KichThuoc kt = kti.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu!"));
+        kt.setTrangThai(1); // 1 = Đang hoạt động
+        kti.save(kt);
     }
 
     public List<KichThuoc> getThungRac() {

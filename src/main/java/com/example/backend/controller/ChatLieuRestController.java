@@ -21,6 +21,11 @@ public class ChatLieuRestController {
         return chatLieuService.getAll();
     }
 
+    @GetMapping("/getAllFull")
+    public List<ChatLieu> getAllFull() {
+        return chatLieuService.getAllFull();
+    }
+
     @GetMapping("/getById/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         return chatLieuService.getById(id)
@@ -37,6 +42,11 @@ public class ChatLieuRestController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody ChatLieu chatLieu) {
         return chatLieuService.update(id, chatLieu);
+    }
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucChatLieu(@PathVariable Integer id) {
+        chatLieuService.khoiPhucChatLieu(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/del/{id}")

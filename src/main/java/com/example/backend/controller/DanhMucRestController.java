@@ -27,6 +27,11 @@ public class DanhMucRestController {
         return danhMucService.getAll();
     }
 
+    @GetMapping("/getAllFull")
+    public List<DanhMuc> getAllFull() {
+        return danhMucService.getAllFull();
+    }
+
     @GetMapping("/getById/{id}")
     public DanhMuc getById(@PathVariable Integer id) {
         return danhMucService.getById(id);
@@ -40,6 +45,11 @@ public class DanhMucRestController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody DanhMuc danhMuc) {
         return danhMucService.update(id, danhMuc);
+    }
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucDanhMuc(@PathVariable Integer id) {
+        danhMucService.khoiPhucDanhMuc(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/del/{id}")

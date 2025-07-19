@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 
 import com.example.backend.entity.ChatLieu;
+import com.example.backend.entity.ThuongHieu;
 import com.example.backend.repository.ChatLieuInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,9 @@ public class ChatLieuService {
 
     public List<ChatLieu> getAll() {
         return cli.findAllByTrangThai(1);
+    }
+    public List<ChatLieu> getAllFull() {
+        return cli.findAll();
     }
 
     public List<ChatLieu> getThungRac() {
@@ -66,6 +70,12 @@ public class ChatLieuService {
         chatLieu.setTrangThai(0);
         ChatLieu saved = cli.save(chatLieu);
         return ResponseEntity.ok(saved);
+    }
+    public void khoiPhucChatLieu(Integer id) {
+        ChatLieu cl = cli.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu!"));
+        cl.setTrangThai(1); // 1 = Đang hoạt động
+        cli.save(cl);
     }
 }
 

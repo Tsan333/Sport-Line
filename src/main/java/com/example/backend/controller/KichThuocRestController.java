@@ -3,6 +3,7 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.KichThuoc;
 
+import com.example.backend.entity.ThuongHieu;
 import com.example.backend.service.KichThuocService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,10 @@ public class KichThuocRestController {
     public List<KichThuoc> getAll() {
         return kichThuocService.getAll();
     }
+    @GetMapping("/getAllFull")
+    public List<KichThuoc> getAllull() {
+        return kichThuocService.getAlla2();
+    }
 
     @GetMapping("/getById/{id}")
     public KichThuoc getById(@PathVariable Integer id) {
@@ -36,6 +41,11 @@ public class KichThuocRestController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody KichThuoc kichThuoc) {
         return kichThuocService.update(id, kichThuoc);
+    }
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucChatLieu(@PathVariable Integer id) {
+        kichThuocService.khoiPhucKichThuoc(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/del/{id}")

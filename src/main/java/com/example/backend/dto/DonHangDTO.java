@@ -19,10 +19,9 @@ public class DonHangDTO {
 
     private Integer id;
 
-
-
     private Integer  idnhanVien;
 
+    private String tenNhanVien;
 
     private Integer  idkhachHang;
 
@@ -39,10 +38,10 @@ public class DonHangDTO {
     private String loaiDonHang;
 
 
-    private String trangThai;
+    private Integer trangThai;
 
 
-    private double tongTien;
+    private Double tongTien;
 
 
     private Double tongTienGiamGia;

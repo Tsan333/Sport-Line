@@ -26,6 +26,10 @@ public class XuatXuRestController {
     public List<XuatXu> getAll() {
         return service.getAllActive();
     }
+    @GetMapping("/getAllFull")
+    public List<XuatXu> getAllFull() {
+        return service.getAllFull();
+    }
 
     @GetMapping("/getById/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
@@ -45,7 +49,11 @@ public class XuatXuRestController {
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody XuatXu xuatXu) {
         return service.update(id, xuatXu);
     }
-
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucXuatXu(@PathVariable Integer id) {
+        service.khoiPhucXuatXu(id);
+        return ResponseEntity.ok().build();
+    }
 
     @DeleteMapping("/del/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {

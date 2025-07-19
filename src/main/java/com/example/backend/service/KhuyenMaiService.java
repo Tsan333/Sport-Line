@@ -19,15 +19,15 @@ public class KhuyenMaiService {
 
     public KhuyenMaiDTO convertDTO(KhuyenMai km){
         return new KhuyenMaiDTO(
-          km.getId(),
-          km.getTenKhuyenMai(),
-          km.getLoaiKhuyenMai(),
-          km.getMoTa(),
-          km.getGiaTri(),
-          km.getDonToiThieu(),
-          km.getNgayBatDau(),
-          km.getNgayKetThuc(),
-          km.getTrangThai()
+                km.getId(),
+                km.getTenKhuyenMai(),
+                km.getLoaiKhuyenMai(),
+                km.getMoTa(),
+                km.getGiaTri(),
+                km.getDonToiThieu(),
+                km.getNgayBatDau(),
+                km.getNgayKetThuc(),
+                km.getTrangThai()
         );
     }
     // ham lay all khuyen mai

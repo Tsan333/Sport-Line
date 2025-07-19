@@ -22,6 +22,12 @@ public class VoucherController {
 
     }
 
+    //hiển thị những voucher đủ điều kiện áp dụng cho đơn hàng
+    @GetMapping("/voucher/available")
+    public ResponseEntity<List<VoucherDTO>> getAvailableVouchers(@RequestParam Integer orderId) {
+        return ResponseEntity.ok(voucherService.getAvailableVouchers(orderId));
+    }
+
     @GetMapping("/voucher/{id}")
     public ResponseEntity<VoucherDTO> getbyid(@PathVariable Integer id){
         return ResponseEntity.ok(voucherService.findById(id));

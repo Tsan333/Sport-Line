@@ -3,6 +3,7 @@ package com.example.backend.service;
 
 
 
+import com.example.backend.entity.KichThuoc;
 import com.example.backend.entity.XuatXu;
 import com.example.backend.repository.XuatXuInterface;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class XuatXuService {
 
     public List<XuatXu> getAllActive() {
         return xuatXuRepo.findAllByTrangThai(1);
+    }
+    public List<XuatXu> getAllFull() {
+        return xuatXuRepo.findAll();
     }
 
     public XuatXu getById(Integer id) {
@@ -79,6 +83,12 @@ public class XuatXuService {
         xuatXu.setTrangThai(0);
         XuatXu saved = xuatXuRepo.save(xuatXu);
         return ResponseEntity.ok(saved);
+    }
+    public void khoiPhucXuatXu(Integer id) {
+        XuatXu xx = xuatXuRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu!"));
+        xx.setTrangThai(1); // 1 = Đang hoạt động
+        xuatXuRepo.save(xx);
     }
 
     public List<XuatXu> getThungRac() {

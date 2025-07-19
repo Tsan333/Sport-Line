@@ -23,6 +23,10 @@ public class MauSacRestController {
     public List<MauSac> getAll() {
         return mauSacService.getAll();
     }
+    @GetMapping("/getAllFull")
+    public List<MauSac> getAllFull() {
+        return mauSacService.getAllFull();
+    }
 
     @GetMapping("/getById/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
@@ -37,6 +41,11 @@ public class MauSacRestController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody MauSac mauSac) {
         return mauSacService.update(id, mauSac);
+    }
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucMauSac(@PathVariable Integer id) {
+        mauSacService.khoiPhucMauSac(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/del/{id}")

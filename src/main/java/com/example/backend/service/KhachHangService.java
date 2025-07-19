@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+import java.util.Optional;
 
 
 @Service
@@ -76,7 +76,14 @@ public class KhachHangService {
 
     }
     // ham them
-    public KhachHangReponseDTO create(KhachHangReponseDTO dto){
+    // KhachHangService.java
+    public KhachHangReponseDTO create(KhachHangReponseDTO dto) {
+        // Kiểm tra trùng số điện thoại
+        Optional<KhachHang> existing = khachHangRepository.findBySoDienThoai(dto.getSoDienThoai());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Số điện thoại đã tồn tại!");
+        }
+
         KhachHang kh = new KhachHang();
         kh.setTenKhachHang(dto.getTenKhachHang());
         kh.setEmail(dto.getEmail());
@@ -84,12 +91,10 @@ public class KhachHangService {
         kh.setGioiTinh(dto.getGioiTinh());
         kh.setDiaChi(dto.getDiaChi());
         kh.setSoDienThoai(dto.getSoDienThoai());
-
         kh.setTrangThai(dto.getTrangThai());
         kh.setMaThongBao(dto.getMaThongBao());
         kh.setThoiGianThongBao(dto.getThoiGianThongBao());
         return convertDTO(khachHangRepository.save(kh));
-
     }
 
     public Boolean deleteById(int id) {

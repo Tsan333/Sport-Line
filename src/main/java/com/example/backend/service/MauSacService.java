@@ -2,6 +2,7 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.MauSac;
+import com.example.backend.entity.ThuongHieu;
 import com.example.backend.repository.MauSacInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class MauSacService {
 
     public List<MauSac> getAll() {
         return msi.findAllByTrangThai(1);
+    }
+    public List<MauSac> getAllFull() {
+        return msi.findAll();
     }
 
     public ResponseEntity<?> getById(Integer id) {
@@ -67,6 +71,12 @@ public class MauSacService {
 
     public List<MauSac> getThungRac() {
         return msi.findAllByTrangThai(0);
+    }
+    public void khoiPhucMauSac(Integer id) {
+        MauSac ms = msi.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu!"));
+        ms.setTrangThai(1); // 1 = Đang hoạt động
+        msi.save(ms);
     }
 }
 

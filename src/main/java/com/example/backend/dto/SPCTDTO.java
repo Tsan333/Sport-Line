@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SPCTDTO {
     private Integer id;
+    private String images;
     private String tenSanPham;
     private Integer soLuong;
     private Double giaBan;

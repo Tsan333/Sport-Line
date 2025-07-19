@@ -23,14 +23,11 @@ public class KhuyenMaiController {
     @GetMapping("/khuyenmai")
     public ResponseEntity<List<KhuyenMaiDTO>> getall(){
         return ResponseEntity.ok(khuyenMaiService.getall());
-
     }
-
     @GetMapping("/khuyenmai/{id}")
     public ResponseEntity<KhuyenMaiDTO> getbyid(@PathVariable Integer id){
         return ResponseEntity.ok(khuyenMaiService.findById(id));
     }
-
     @PostMapping("/khuyenmai/create")
     public ResponseEntity<KhuyenMaiDTO> create(@RequestBody KhuyenMaiDTO khuyenMaiDTO){
         KhuyenMaiDTO dto = khuyenMaiService.create(khuyenMaiDTO);

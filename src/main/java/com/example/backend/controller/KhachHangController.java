@@ -34,10 +34,23 @@ public class KhachHangController {
         return ResponseEntity.ok(khachHangDTO);
     }
 
+    // KhachHangController.java
     @PostMapping("/khachhang/create")
-    public ResponseEntity<KhachHangReponseDTO>  create(@RequestBody KhachHangReponseDTO khachHangDTO) {
-        KhachHangReponseDTO dto = khachHangService.create(khachHangDTO);
-        return  ResponseEntity.ok(dto);
+    public ResponseEntity<?> create(@RequestBody KhachHangReponseDTO khachHangDTO) {
+        try {
+            KhachHangReponseDTO dto = khachHangService.create(khachHangDTO);
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            // Lỗi chủ động (ví dụ: số điện thoại đã tồn tại)
+            return ResponseEntity
+                    .badRequest()
+                    .body(java.util.Collections.singletonMap("message", e.getMessage()));
+        } catch (Exception e) {
+            // Bắt mọi lỗi khác (ví dụ: Query did not return a unique result)
+            return ResponseEntity
+                    .badRequest()
+                    .body(java.util.Collections.singletonMap("message", "Dữ liệu khách hàng đã tồn tại!"));
+        }
     }
 
     @DeleteMapping("/khachhang/delete/{id}")

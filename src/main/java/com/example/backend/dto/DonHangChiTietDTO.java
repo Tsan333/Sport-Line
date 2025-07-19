@@ -1,4 +1,3 @@
-
 package com.example.backend.dto;
 
 
@@ -15,7 +14,7 @@ public class DonHangChiTietDTO {
     private Integer id;
     private Integer idDonHang;
     private Integer idSanPhamChiTiet;
-    private int soLuong;
-    private double gia;
-    private double thanhTien;
+    private Integer soLuong;
+    private Double gia;
+    private Double thanhTien;
 }
