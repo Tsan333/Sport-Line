@@ -2,11 +2,13 @@
 package com.example.backend.service;
 
 
+import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
 import com.example.backend.entity.KhachHang;
 import com.example.backend.repository.KhachHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
@@ -118,5 +120,32 @@ public class KhachHangService {
                 })
                 .orElse(null);
 
+    }
+
+    @Autowired
+    private PasswordEncoder encoder;
+
+
+
+    public void dangKyKhach(DangKyRequest req) {
+        if (!req.getMatKhau().equals(req.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu xác nhận không khớp!");
+        }
+
+        if (khachHangRepository.existsByEmail(req.getEmail())) {
+            throw new RuntimeException("Email đã được sử dụng!");
+        }
+
+        KhachHang kh = new KhachHang();
+        kh.setEmail(req.getEmail());
+        kh.setMatKhau(encoder.encode(req.getMatKhau()));
+        kh.setTenKhachHang(req.getTenKhachHang());
+        kh.setSoDienThoai(req.getSoDienThoai());
+        kh.setTrangThai(true);
+        kh.setGioiTinh(true);
+        kh.setDiaChi(req.getDiaChi());
+
+
+        khachHangRepository.save(kh);
     }
 }
