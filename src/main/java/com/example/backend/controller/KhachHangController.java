@@ -3,9 +3,11 @@ package com.example.backend.controller;
 
 
 
+import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
 import com.example.backend.service.KhachHangService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,5 +50,11 @@ public class KhachHangController {
     @PutMapping("/khachhang/update/{id}")
     public ResponseEntity<KhachHangReponseDTO> update(@PathVariable int id, @RequestBody KhachHangReponseDTO dto) {
         return ResponseEntity.ok(khachHangService.update(id, dto));
+    }
+
+    @PostMapping("/dang-ky")
+    public ResponseEntity<String> dangKy(@Valid @RequestBody DangKyRequest req) {
+        khachHangService.dangKyKhach(req);
+        return ResponseEntity.ok("Đăng ký khách hàng thành công!");
     }
 }
