@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 
 
+import com.example.backend.entity.DonHang;
 import com.example.backend.entity.DonHangChiTiet;
 import com.example.backend.dto.DonHangChiTietDTO;
 import com.example.backend.entity.SanPhamChiTiet;
@@ -130,10 +131,14 @@ public List<DonHangChiTietDTO> getDonHangById(Integer id) {
             // Hoàn lại tồn kho
             spct.setSoLuong(spct.getSoLuong() + chiTiet.getSoLuong());
             sanPhamChiTietRepository.save(spct);
-            Integer idDonHang = chiTiet.getDonHang().getId();
+
+            DonHang donHang = chiTiet.getDonHang();
+            if (donHang != null && donHang.getDonHangChiTiets() != null) {
+                donHang.getDonHangChiTiets().remove(chiTiet); // Quan trọng!
+            }
+
             chiTietRepository.deleteById(id);
-            // Gọi cập nhật tổng tiền hóa đơn sau khi xóa
-            donHangService.capNhatTongTienDonHang(idDonHang);
+            donHangService.capNhatTongTienDonHang(donHang.getId());
         }
     }
     private DonHangChiTietDTO convertToDTO(DonHangChiTiet ct) {

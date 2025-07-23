@@ -45,55 +45,25 @@ public class SanPhamService {
     }
 
     public SanPham create(SanPham sanPham) {
-        if (sanPham.getKhuyenMai() != null) {
-            Integer id = sanPham.getKhuyenMai().getId();
-            if (id == null) {
-                sanPham.setKhuyenMai(null);
-            }
+        Optional<SanPham> existing = sanPhamRepo.findByTenSanPhamIgnoreCase(sanPham.getTenSanPham());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Mã sản phẩm đã tồn tại!");
         }
-        List<SanPham> existing = sanPhamRepo.findByTenSanPhamAndDanhMuc_IdAndThuongHieu_IdAndChatLieu_IdAndXuatXu_Id(
-                sanPham.getTenSanPham(),
-                sanPham.getDanhMuc().getId(),
-                sanPham.getThuongHieu().getId(),
-                sanPham.getChatLieu().getId(),
-                sanPham.getXuatXu().getId()
-        );
-        if (!existing.isEmpty()) {
-            throw new ThongBao("Sản phẩm với các thuộc tính này đã tồn tại!");
-        }
-
         sanPham.setTrangThai(1);
         return sanPhamRepo.save(sanPham);
     }
 
     public SanPham update(Integer id, SanPham sanPham) {
         SanPham current = sanPhamRepo.findById(id)
-                .orElseThrow(() -> new ThongBao("Không tìm thấy sản phẩm với ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
 
-        // Kiểm tra trùng (loại trừ chính nó)
-        List<SanPham> existing = sanPhamRepo.findByDanhMuc_IdAndThuongHieu_IdAndChatLieu_IdAndXuatXu_IdAndKhuyenMai_Id(
-                sanPham.getDanhMuc().getId(),
-                sanPham.getThuongHieu().getId(),
-                sanPham.getChatLieu().getId(),
-                sanPham.getXuatXu().getId(),
-                sanPham.getKhuyenMai() != null ? sanPham.getKhuyenMai().getId() : null
-        );
-        if (existing.stream().anyMatch(sp -> !sp.getId().equals(id))) {
-            throw new ThongBao("Sản phẩm với các thuộc tính này đã tồn tại!");
+        Optional<SanPham> existing = sanPhamRepo.findByTenSanPhamIgnoreCase(sanPham.getTenSanPham());
+        if (existing.isPresent() && !existing.get().getId().equals(id)) {
+            throw new RuntimeException("Mã sản phẩm đã tồn tại!");
         }
 
-
-        // Cập nhật các trường thực tế bạn có
-        current.setTenSanPham(sanPham.getTenSanPham());
-        current.setDanhMuc(sanPham.getDanhMuc());
-        current.setThuongHieu(sanPham.getThuongHieu());
-        current.setChatLieu(sanPham.getChatLieu());
-        current.setXuatXu(sanPham.getXuatXu());
-        current.setImanges(sanPham.getImanges());
-        current.setTrangThai(sanPham.getTrangThai());
-        current.setKhuyenMai(sanPham.getKhuyenMai()); // Trường này có thể null hoặc có id
-
-        return sanPhamRepo.save(current);
+        sanPham.setId(id); // Gán id vào entity
+        return sanPhamRepo.save(sanPham);
     }
 
     public void delete(Integer id) {
@@ -116,6 +86,14 @@ public class SanPhamService {
     public List<SanPham> getDeleted() {
         return sanPhamRepo.findAllByTrangThai(0);
     }
+
+
+
+
+
+
+
+
 
 
 }

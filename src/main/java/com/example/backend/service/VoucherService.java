@@ -248,7 +248,7 @@ public class VoucherService {
         if (voucher.getTrangThai() == null || voucher.getTrangThai() != 1) {
             throw new RuntimeException("Voucher không hoạt động");
         }
-        if (voucher.getSoLuong() == null || voucher.getSoLuong() <= 0) {
+        if (voucher.getSoLuong() == null || voucher.getSoLuong() < 0) {
             throw new RuntimeException("Voucher đã hết lượt sử dụng");
         }
         if (voucher.getNgayBatDau().isAfter(LocalDateTime.now()) || voucher.getNgayKetThuc().isBefore(LocalDateTime.now())) {

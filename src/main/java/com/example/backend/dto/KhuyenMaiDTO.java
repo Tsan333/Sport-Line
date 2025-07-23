@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -13,32 +14,15 @@ import java.util.Date;
 @Getter
 @Setter
 public class KhuyenMaiDTO {
-
-
-
-
     private Integer id;
 
     private String tenKhuyenMai;
 
-
-
-    private String loaiKhuyenMai;
-
-
-
-    private String moTa;
-
-
     private float giaTri;
 
+    private LocalDateTime ngayBatDau;
 
-    private Float donToiThieu;
-
-
-    private Date ngayBatDau;
-
-    private Date ngayKetThuc;
+    private LocalDateTime ngayKetThuc;
 
     private int trangThai;
 }

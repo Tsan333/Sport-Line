@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface SanPhamInterface extends JpaRepository<SanPham,Integer> {
     List<SanPham> findAllByTrangThai(int trangThai);
-    Optional<SanPham> findByTenSanPhamIgnoreCase(String tenSanPham);
+    Optional<SanPham> findByTenSanPhamIgnoreCase(String maSanPham);
     List<SanPham> findByTenSanPhamAndDanhMuc_IdAndThuongHieu_IdAndChatLieu_IdAndXuatXu_Id(
             String tenSanPham,
             Integer idDanhMuc,
@@ -20,8 +20,8 @@ public interface SanPhamInterface extends JpaRepository<SanPham,Integer> {
             Integer idChatLieu,
             Integer idXuatXu
     );
-    List<SanPham> findByDanhMuc_IdAndThuongHieu_IdAndChatLieu_IdAndXuatXu_IdAndKhuyenMai_Id(
-            Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu, Integer idKhuyenMai
+    List<SanPham> findByDanhMuc_IdAndThuongHieu_IdAndChatLieu_IdAndXuatXu_Id(
+            Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu
     );
 //    List<SanPham> findByDanhMuc_Id(Integer danhMucId);
 //    List<SanPham> findByThuongHieu_Id(Integer thuongHieuId);

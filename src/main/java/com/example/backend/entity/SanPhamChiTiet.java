@@ -1,11 +1,13 @@
 package com.example.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 
+
+import java.time.*;
 import java.sql.Date;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -13,7 +15,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "SanPhamChiTiet")
-
 public class SanPhamChiTiet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,18 +39,19 @@ public class SanPhamChiTiet {
     @JoinColumn(name = "IdMauSac", referencedColumnName = "Id")
     private MauSac mauSac;
 
+    @ManyToOne
+    @JoinColumn(name = "IdKhuyenMai", referencedColumnName = "Id")
+    private KhuyenMai khuyenMai;
+
     @Column(name = "NgayTao")
     private LocalDateTime ngayTao;
 
     @Column(name = "TrangThai")
     private Integer trangThai;
 
-
     @Column(name = "GiaBan")
     private Double giaBan;
 
-
-
-
-
+    @Column(name = "GiaBanGiamGia")
+    private Double giaBanGiamGia;
 }

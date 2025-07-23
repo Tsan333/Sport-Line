@@ -2,6 +2,7 @@ package com.example.backend.repository;
 
 
 import com.example.backend.dto.SPCTDTO;
+import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.KichThuoc;
 import com.example.backend.entity.SanPham;
 import com.example.backend.entity.SanPhamChiTiet;
@@ -19,21 +20,24 @@ import java.util.Optional;
 public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,Integer> {
     @Query(
             """
-            SELECT new com.example.backend.dto.SPCTDTO(
-                spct.id,
-                sp.imanges,
-                sp.tenSanPham,
-                spct.soLuong,
-                spct.giaBan,
-                kt.tenKichThuoc,
-                ms.tenMauSac
-            )
-            FROM SanPhamChiTiet spct
-            JOIN spct.sanPham sp
-            JOIN spct.kichThuoc kt
-            JOIN spct.mauSac ms
-            WHERE sp.trangThai = 1
-                        And spct.trangThai = 1
+
+                    SELECT new com.example.backend.dto.SPCTDTO(
+                    spct.id,
+                    sp.imanges,
+                    sp.tenSanPham,
+                    spct.soLuong,
+                    spct.giaBan,
+                    spct.giaBanGiamGia,
+                    kt.tenKichThuoc,
+                    ms.tenMauSac,
+                    spct.khuyenMai.id 
+                )
+                FROM SanPhamChiTiet spct
+                JOIN spct.sanPham sp
+                JOIN spct.kichThuoc kt
+                JOIN spct.mauSac ms
+                WHERE sp.trangThai = 1
+                          And spct.trangThai = 1
             """
     )
     List<SPCTDTO> getAllSPCTDTO();
@@ -46,8 +50,10 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
+                spct.giaBanGiamGia,
                 kt.tenKichThuoc,
-                ms.tenMauSac
+                ms.tenMauSac,
+                spct.khuyenMai.id
             )
             FROM SanPhamChiTiet spct
             JOIN spct.sanPham sp
@@ -60,14 +66,35 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
 
     @Query(
             """
+            SELECT new com.example.backend.dto.SanPhamDonHangResponse(
+                sp.tenSanPham,
+                kt.tenKichThuoc,
+                ms.tenMauSac,
+                dhct.soLuong,
+                dhct.thanhTien
+            )
+            FROM DonHangChiTiet dhct
+            JOIN dhct.sanPhamChiTiet spct
+            JOIN spct.sanPham sp
+            JOIN spct.kichThuoc kt
+            JOIN spct.mauSac ms
+            WHERE dhct.donHang.id = :idDonHang
+            """
+    )
+    List<SanPhamDonHangResponse> getSanPhamByDonHang(@Param("idDonHang") Integer idDonHang);
+
+    @Query(
+            """
             SELECT new com.example.backend.dto.SPCTDTO(
                 spct.id,
-            sp.imanges,
+                sp.imanges,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
+                spct.giaBanGiamGia,
                 kt.tenKichThuoc,
-                ms.tenMauSac
+                ms.tenMauSac,
+                spct.khuyenMai.id 
             )
             FROM SanPhamChiTiet spct
             JOIN spct.sanPham sp
@@ -99,6 +126,14 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
             @Param("kichThuocId") Integer kichThuocId,
             @Param("trangThai") Integer trangThai
     );
+
+
+    List<SanPhamChiTiet> findByKhuyenMai_Id(Integer khuyenMaiId);
+
+
+
+
+
 
 
 }
