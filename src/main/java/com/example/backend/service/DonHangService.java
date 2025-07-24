@@ -284,23 +284,50 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
 
         return dh;
     }
-    public void capNhatTongTienDonHang(Integer idDonHang) {
-        DonHang donHang = donHangRepository.findById(idDonHang).orElseThrow();
-        List<DonHangChiTiet> chiTiets = donHang.getDonHangChiTiets();
-        double tongTienGoc = 0;
-        for (DonHangChiTiet ct : chiTiets) {
-            tongTienGoc += ct.getThanhTien();
-        }
+//    public void capNhatTongTienDonHang(Integer idDonHang) {
+//        DonHang donHang = donHangRepository.findById(idDonHang).orElseThrow();
+//        List<DonHangChiTiet> chiTiets = donHang.getDonHangChiTiets();
+//        double tongTienGoc = 0;
+//        for (DonHangChiTiet ct : chiTiets) {
+//            tongTienGoc += ct.getThanhTien();
+//        }
+//
+//        double giam = 0.0;
+//        if (donHang.getGiamGia() != null) {
+//            giam = tinhTienGiamVoucher(tongTienGoc, donHang.getGiamGia());
+//        }
+//        donHang.setTongTienGiamGia(giam);
+//        donHang.setTongTien(tongTienGoc - giam);
+//
+//        donHangRepository.save(donHang);
+//    }
+        public void capNhatTongTienDonHang(Integer idDonHang) {
+            DonHang donHang = donHangRepository.findById(idDonHang).orElseThrow();
+            List<DonHangChiTiet> chiTiets = donHangChiTietRepository.findByDonHang_Id(idDonHang);
+            double tongTienGoc = 0;
+            for (DonHangChiTiet ct : chiTiets) {
+                tongTienGoc += ct.getThanhTien();
+            }
 
-        double giam = 0.0;
-        if (donHang.getGiamGia() != null) {
-            giam = tinhTienGiamVoucher(tongTienGoc, donHang.getGiamGia());
-        }
-        donHang.setTongTienGiamGia(giam);
-        donHang.setTongTien(tongTienGoc - giam);
+            double giam = 0.0;
+            Voucher voucher = donHang.getGiamGia();
+            if (voucher != null) {
+                // Kiểm tra điều kiện đơn tối thiểu
+                if (tongTienGoc < voucher.getDonToiThieu()) {
+                    // Không đủ điều kiện, hủy voucher
+                    donHang.setGiamGia(null);
+                    donHang.setTongTienGiamGia(0.0);
+                } else {
+                    giam = tinhTienGiamVoucher(tongTienGoc, voucher);
+                    donHang.setTongTienGiamGia(giam);
+                }
+            } else {
+                donHang.setTongTienGiamGia(0.0);
+            }
+            donHang.setTongTien(tongTienGoc - giam);
 
-        donHangRepository.save(donHang);
-    }
+            donHangRepository.save(donHang);
+        }
 
     // Tạo đơn mới
     public DonHangDTO taoHoaDonOnline(HoaDonOnlineRequest req) {
@@ -376,7 +403,6 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
             throw new RuntimeException("Không thể hủy đơn ở trạng thái: "
                     + TrangThaiDonHang.fromValue(trangThaiCu).getDisplayName());
         }
-
         //  Cập nhật trạng thái đơn
         don.setTrangThai(TrangThaiDonHang.DA_HUY.getValue());
 

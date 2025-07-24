@@ -148,6 +148,10 @@ public class SPCTService {
     public List<SanPhamChiTiet> getSPCTDTOById(Integer id) {
         return spcti.findBySanPham_Id(id);
     }
+    public SPCTDTO getSPCTDTOByIdSPCT(Integer id) {
+        return spcti.getSPCTDTOById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
+    }
     public List<SanPhamChiTiet> getThungrac(Integer id) {
         return spcti.findBySanPham_IdAndTrangThai(id,0);
     }

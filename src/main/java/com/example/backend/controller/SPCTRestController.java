@@ -28,9 +28,17 @@ public class SPCTRestController {
         return ResponseEntity.ok(service.getAllForOffline());
     }
 
+    // tìm theo id sản phẩm
     @GetMapping("/{id}")
     public ResponseEntity<List<SanPhamChiTiet> > getSPCTDTOById(@PathVariable Integer id) {
         return ResponseEntity.ok(service.getSPCTDTOById(id));
+    }
+
+    //tìm theo id spct
+    @GetMapping("spct/{id}")
+    public ResponseEntity<SPCTDTO> getSPCTById(@PathVariable Integer id) {
+        SPCTDTO dto = service.getSPCTDTOByIdSPCT(id);
+        return ResponseEntity.ok(dto);
     }
     @GetMapping("thung-rac/{id}")
     public ResponseEntity<List<SanPhamChiTiet> > getThungrac(@PathVariable Integer id) {
