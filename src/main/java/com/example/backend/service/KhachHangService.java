@@ -5,9 +5,13 @@ package com.example.backend.service;
 import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
+import com.example.backend.dto.PageReSponse;
 import com.example.backend.entity.KhachHang;
 import com.example.backend.repository.KhachHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -147,5 +151,31 @@ public class KhachHangService {
 
 
         khachHangRepository.save(kh);
+    }
+    //phan trang khach hang
+    public PageReSponse<KhachHangReponseDTO> getPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<KhachHang> pageResult = khachHangRepository.findAll(pageable);
+
+        List<KhachHangReponseDTO> content = pageResult.getContent().stream()
+                .map(this::convertDTO) // convert từ Entity sang DTO
+                .toList();
+
+        PageReSponse<KhachHangReponseDTO> response = new PageReSponse<>();
+        response.setContent(content);
+        response.setPageNumber(pageResult.getNumber());
+        response.setPageSize(pageResult.getSize());
+        response.setTotalElements(pageResult.getTotalElements());
+        response.setTotalPages(pageResult.getTotalPages());
+        response.setLast(pageResult.isLast());
+
+        return response;
+    }
+    //tim kiem khach hang theo ten, sdt, email
+    public List<KhachHangReponseDTO> search(String keyword) {
+        List<KhachHang> result = khachHangRepository.search(keyword);
+        return result.stream()
+                .map(this::convertDTO)
+                .toList();
     }
 }
