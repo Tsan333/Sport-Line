@@ -1,10 +1,11 @@
 package com.example.backend.controller;
 
-
-
+import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
+import com.example.backend.dto.PageReSponse;
 import com.example.backend.service.KhachHangService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,13 @@ public class KhachHangController {
         return ResponseEntity.ok(khachHangDTO);
     }
 
+    @GetMapping("/khachhang/page")
+    public ResponseEntity<PageReSponse<KhachHangReponseDTO>> getPage(@RequestParam int page,
+                                                                     @RequestParam int size) {
+        PageReSponse<KhachHangReponseDTO> response = khachHangService.getPaged(page, size);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/khachhang/create")
     public ResponseEntity<KhachHangReponseDTO>  create(@RequestBody KhachHangReponseDTO khachHangDTO) {
         KhachHangReponseDTO dto = khachHangService.create(khachHangDTO);
@@ -47,5 +55,16 @@ public class KhachHangController {
     @PutMapping("/khachhang/update/{id}")
     public ResponseEntity<KhachHangReponseDTO> update(@PathVariable int id, @RequestBody KhachHangReponseDTO dto) {
         return ResponseEntity.ok(khachHangService.update(id, dto));
+    }
+
+    @PostMapping("/dang-ky")
+    public ResponseEntity<String> dangKy(@Valid @RequestBody DangKyRequest req) {
+        khachHangService.dangKyKhach(req);
+        return ResponseEntity.ok("Đăng ký khách hàng thành công!");
+    }
+
+    @GetMapping("/khachhang/search")
+    public ResponseEntity<List<KhachHangReponseDTO>> search(@RequestParam String keyword) {
+        return ResponseEntity.ok(khachHangService.search(keyword));
     }
 }
