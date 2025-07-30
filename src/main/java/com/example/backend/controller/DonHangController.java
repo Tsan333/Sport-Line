@@ -6,7 +6,9 @@ import com.example.backend.dto.DonHangDTO;
 import com.example.backend.dto.HoaDonOnlineRequest;
 import com.example.backend.entity.DonHang;
 import com.example.backend.enums.TrangThaiDonHang;
+import com.example.backend.repository.DonHangRepository;
 import com.example.backend.service.DonHangService;
+import com.example.backend.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +19,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class DonHangController {
-
-
     @Autowired
     private DonHangService donHangService;
+
+    @Autowired
+    private DonHangRepository donHangRepository;
+
+    @Autowired
+    private VoucherService voucherService;
 
     @GetMapping("/donhang")
     public ResponseEntity<List<DonHangDTO>> getAll() {
@@ -127,5 +133,36 @@ public class DonHangController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/donhang/{idDonHang}/apply-voucher/{idVoucher}")
+    public ResponseEntity<?> applyVoucherToDonHang(
+            @PathVariable Integer idDonHang,
+            @PathVariable Integer idVoucher
+    ) {
+        DonHang dh = donHangRepository.findById(idDonHang)
+                .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại"));
+
+        try {
+            voucherService.updateVoucherForDonHang(dh,idVoucher);
+            donHangRepository.save(dh);
+
+            return ResponseEntity.ok(dh);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/donhang/{idDonHang}/remove-voucher")
+    public ResponseEntity<?> removeVoucherFromDonHang(@PathVariable Integer idDonHang) {
+        DonHang dh = donHangRepository.findById(idDonHang)
+                .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại"));
+
+        dh.setGiamGia(null);
+        dh.setTongTienGiamGia(dh.getTongTien());
+
+        donHangRepository.save(dh);
+
+        return ResponseEntity.ok("Đã gỡ voucher khỏi đơn hàng");
     }
 }

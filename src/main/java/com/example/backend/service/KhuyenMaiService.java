@@ -118,11 +118,12 @@ public class KhuyenMaiService {
 
         for (SanPhamChiTiet sp : danhSachSanPham) {
             KhuyenMai km = sp.getKhuyenMai();
-            if (km != null &&
+            boolean hopLe = km != null &&
                     km.getTrangThai() == 1 &&
                     now.isAfter(km.getNgayBatDau()) &&
-                    now.isBefore(km.getNgayKetThuc())) {
+                    now.isBefore(km.getNgayKetThuc());
 
+            if (hopLe) {
                 Float giaTri = km.getGiaTri();
                 if (giaTri != null && giaTri > 0) {
                     double giamGia = sp.getGiaBan() * giaTri / 100.0;
@@ -131,10 +132,11 @@ public class KhuyenMaiService {
                 }
             }
 
-            // Không có khuyến mãi hợp lệ
+            sp.setKhuyenMai(null);
             sp.setGiaBanGiamGia(sp.getGiaBan());
         }
     }
+
 
     @Scheduled(fixedRate = 6000000) // Cập nhật mỗi 60 giây
     public void updateActiveKhuyenMai() {
@@ -162,47 +164,57 @@ public class KhuyenMaiService {
             List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findByKhuyenMai_Id(km.getId());
 
             if (isExpired) {
-                // HẾT HẠN → Gỡ khỏi sản phẩm + cập nhật trạng thái KM
+                //   Hết hạn: Gỡ KM khỏi sản phẩm và reset giá giảm
                 for (SanPhamChiTiet ct : chiTietList) {
                     ct.setKhuyenMai(null);
                     ct.setGiaBanGiamGia(ct.getGiaBan());
                     sanPhamChiTietCapNhat.add(ct);
                 }
+                // Cập nhật trạng thái KM về 0 nếu cần
                 if (km.getTrangThai() != 0) {
                     km.setTrangThai(0);
                     khuyenMaiCapNhat.add(km);
                 }
 
             } else if (isActive) {
-                // ĐANG HIỆU LỰC
                 if (chiTietList.isEmpty()) {
-                    // ⚠ Trường hợp khuyến mãi còn hiệu lực nhưng không có sản phẩm áp dụng → Tắt trạng thái
+                    // KM còn hiệu lực nhưng không áp dụng cho sản phẩm nào → Tắt KM
                     if (km.getTrangThai() != 0) {
                         km.setTrangThai(0);
                         khuyenMaiCapNhat.add(km);
                     }
                 } else {
-                    // Có sản phẩm áp dụng → Đảm bảo trạng thái = 1
+                    //  KM còn hiệu lực và có sản phẩm → Bật trạng thái nếu chưa bật
                     if (km.getTrangThai() != 1) {
                         km.setTrangThai(1);
                         khuyenMaiCapNhat.add(km);
                     }
                 }
-
             } else {
-                // CHƯA ĐẾN hoặc KHÔNG HỢP LỆ
-                if (km.getTrangThai() != 0) {
-                    km.setTrangThai(0);
-                    khuyenMaiCapNhat.add(km);
+                // NEW CASE: KM từng hết hạn (trạng thái = 0), nhưng ngày kết thúc đã cập nhật lại
+                if (km.getTrangThai() == 0 && km.getNgayBatDau().isBefore(now) && km.getNgayKetThuc().isAfter(now)) {
+                    if (!chiTietList.isEmpty()) {
+                        // Có sản phẩm và thời gian hợp lệ → Bật lại trạng thái
+                        km.setTrangThai(1);
+                        khuyenMaiCapNhat.add(km);
+                    }
+                } else {
+                    // KM chưa đến hoặc không hợp lệ → Tắt trạng thái
+                    if (km.getTrangThai() != 0) {
+                        km.setTrangThai(0);
+                        khuyenMaiCapNhat.add(km);
+                    }
                 }
             }
         }
 
         if (!sanPhamChiTietCapNhat.isEmpty()) {
+            //  Lưu lại các sản phẩm đã gỡ KM
             sanPhamChiTietRepository.saveAll(sanPhamChiTietCapNhat);
         }
 
         if (!khuyenMaiCapNhat.isEmpty()) {
+            //  Lưu lại các KM có thay đổi trạng thái
             khuyenMaiRepository.saveAll(khuyenMaiCapNhat);
         }
     }
