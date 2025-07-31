@@ -160,15 +160,16 @@ public class KhuyenMaiService {
             boolean isExpired = km.getNgayKetThuc().isBefore(now);
             boolean isActive = km.getNgayBatDau().isBefore(now) && km.getNgayKetThuc().isAfter(now);
 
-            List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findByKhuyenMai_Id((km.getId()));
+            List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findByKhuyenMai_Id(km.getId());
 
             if (isExpired) {
-                // HẾT HẠN → Gỡ khỏi sản phẩm + cập nhật trạng thái KM
+                //   Hết hạn: Gỡ KM khỏi sản phẩm và reset giá giảm
                 for (SanPhamChiTiet ct : chiTietList) {
                     ct.setKhuyenMai(null);
                     ct.setGiaBanGiamGia(ct.getGiaBan());
                     sanPhamChiTietCapNhat.add(ct);
                 }
+
                 if (km.getTrangThai() != 0) {
                     km.setTrangThai(0);
                     khuyenMaiCapNhat.add(km);
@@ -183,18 +184,25 @@ public class KhuyenMaiService {
                         khuyenMaiCapNhat.add(km);
                     }
                 } else {
-                    // Có sản phẩm áp dụng → Đảm bảo trạng thái = 1
                     if (km.getTrangThai() != 1) {
                         km.setTrangThai(1);
                         khuyenMaiCapNhat.add(km);
                     }
                 }
-
             } else {
-                // CHƯA ĐẾN hoặc KHÔNG HỢP LỆ
-                if (km.getTrangThai() != 0) {
-                    km.setTrangThai(0);
-                    khuyenMaiCapNhat.add(km);
+                // NEW CASE: KM từng hết hạn (trạng thái = 0), nhưng ngày kết thúc đã cập nhật lại
+                if (km.getTrangThai() == 0 && km.getNgayBatDau().isBefore(now) && km.getNgayKetThuc().isAfter(now)) {
+                    if (!chiTietList.isEmpty()) {
+                        // Có sản phẩm và thời gian hợp lệ → Bật lại trạng thái
+                        km.setTrangThai(1);
+                        khuyenMaiCapNhat.add(km);
+                    }
+                } else {
+                    // KM chưa đến hoặc không hợp lệ → Tắt trạng thái
+                    if (km.getTrangThai() != 0) {
+                        km.setTrangThai(0);
+                        khuyenMaiCapNhat.add(km);
+                    }
                 }
             }
         }

@@ -44,4 +44,3 @@ public class ghnConfig {
         System.out.println("Base URL: " + baseUrl);
     }
 }
-

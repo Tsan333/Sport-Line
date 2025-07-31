@@ -5,6 +5,7 @@ import com.example.backend.dto.SPCTDTO;
 import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.KichThuoc;
 import com.example.backend.entity.SanPham;
+import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.SanPhamChiTiet;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +21,6 @@ import java.util.Optional;
 public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,Integer> {
     @Query(
             """
-
                     SELECT new com.example.backend.dto.SPCTDTO(
                     spct.id,
                     sp.imanges,
@@ -129,11 +129,4 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
 
 
     List<SanPhamChiTiet> findByKhuyenMai_Id(Integer khuyenMaiId);
-
-
-
-
-
-
-
 }

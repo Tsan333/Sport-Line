@@ -3,6 +3,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.SPCTDTO;
 import com.example.backend.dto.SPCTRequest;
+import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.SanPhamChiTiet;
 
 
@@ -23,7 +24,6 @@ public class SPCTRestController {
     private SPCTService service;
 
     @GetMapping("/getAll")
-
     public ResponseEntity<List<SPCTDTO>> getAllForOffline() {
         return ResponseEntity.ok(service.getAllForOffline());
     }
@@ -50,7 +50,6 @@ public class SPCTRestController {
     @GetMapping("/search")
     public ResponseEntity<List<SPCTDTO>> getByTen(@RequestParam String keyword) {
         return ResponseEntity.ok(service.searchByTenSanPham(keyword));
-
     }
     @GetMapping("/bo-loc")
     public ResponseEntity<List<SanPhamChiTiet>> filterSPCT(
@@ -89,6 +88,7 @@ public class SPCTRestController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<SanPhamChiTiet> update(@PathVariable Integer id,
                                                  @RequestBody @Valid SanPhamChiTiet s) {

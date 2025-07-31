@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 import java.util.Optional;
 
 @Repository
@@ -21,6 +22,7 @@ public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,I
     @Query("DELETE FROM DonHangChiTiet d WHERE d.donHang.id = :idDonHang")
     void deleteByDonHangId(@Param("idDonHang") Integer idDonHang);
     Optional<DonHangChiTiet> findByDonHang_IdAndSanPhamChiTiet_Id(Integer idDonHang, Integer idSanPhamChiTiet);
+
     @Query("""
     SELECT new com.example.backend.dto.DonHangChiTietDTO(
         dhct.id,
@@ -41,6 +43,8 @@ public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,I
     List<DonHangChiTietDTO> findByDonHangId(@Param("id") Integer id);
 
     List<DonHangChiTiet> findByDonHang_Id(Integer donHangId);
+
+    List<DonHangChiTiet> findEntityByDonHang_Id(Integer idDonHang);
 
     @Query("SELECT SUM(ct.soLuong) FROM DonHangChiTiet ct JOIN ct.donHang dh WHERE dh.trangThai = 4")
     Long sumTotalProductsSold();

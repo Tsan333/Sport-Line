@@ -71,6 +71,7 @@ public class SPCTService {
 
         return spcti.save(spct);
     }
+
     public SanPhamChiTiet updateSanPhamChiTiet(Integer idSpct, SPCTRequest request) {
         // Tìm biến thể cũ
         SanPhamChiTiet spct = spcti.findById(idSpct)
@@ -117,6 +118,7 @@ public class SPCTService {
 
         return spcti.save(spct);
     }
+
     public List<SanPhamChiTiet> getAll() {
         return spcti.findAll();
     }
@@ -145,19 +147,24 @@ public class SPCTService {
         return spcti.saveAll(danhSachSanPham);
     }
 
+
     public List<SanPhamChiTiet> getSPCTDTOById(Integer id) {
         return spcti.findBySanPham_Id(id);
     }
+
     public SPCTDTO getSPCTDTOByIdSPCT(Integer id) {
         return spcti.getSPCTDTOById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
     }
+
     public List<SanPhamChiTiet> getThungrac(Integer id) {
         return spcti.findBySanPham_IdAndTrangThai(id,0);
     }
+
     public List<SPCTDTO> searchByTenSanPham(String keyword) {
         return spcti.searchByTenSanPham(keyword);
     }
+
     public List<SanPhamChiTiet> filterSPCT(Integer sanPhamId, Integer mauSacId, Integer kichThuocId, Integer trangThai) {
         return spcti.filterSPCT(sanPhamId, mauSacId, kichThuocId, trangThai);
     }
@@ -166,6 +173,7 @@ public class SPCTService {
         return spcti.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
     }
+
     public void khoi_phuc(Integer id) {
         Optional<SanPhamChiTiet> optional = spcti.findById(id);
         if (optional.isPresent()) {
@@ -176,6 +184,7 @@ public class SPCTService {
             throw new RuntimeException("Không tìm thấy sản phẩm");
         }
     }
+
     public void xoa_mem(Integer id) {
         Optional<SanPhamChiTiet> optional = spcti.findById(id);
         if (optional.isPresent()) {
@@ -186,6 +195,7 @@ public class SPCTService {
             throw new RuntimeException("Không tìm thấy sản phẩm");
         }
     }
+
     public SanPhamChiTiet create(SanPhamChiTiet s) {
         s.setNgayTao(LocalDateTime.now());
         return spcti.save(s);
@@ -200,12 +210,4 @@ public class SPCTService {
     public void delete(Integer id) {
         spcti.deleteById(id);
     }
-
-
-
-
-
-
-
-
 }

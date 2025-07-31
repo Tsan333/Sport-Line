@@ -1,7 +1,4 @@
     package com.example.backend.controller;
-
-
-
     import com.example.backend.dto.*;
     import com.example.backend.entity.DonHang;
     import com.example.backend.enums.TrangThaiDonHang;
@@ -18,8 +15,6 @@
     @RestController
     @RequestMapping("/api")
     public class DonHangController {
-
-
 
         @Autowired
         private DonHangRepository donHangRepository;
@@ -121,6 +116,7 @@
                 return ResponseEntity.badRequest().body("Không tìm thấy đơn hàng hoặc voucher");
             }
         }
+
         @PutMapping("/update-khachhang/{idKhachHang}")
         public ResponseEntity<?> updateKhachHang(
                 @PathVariable Integer idKhachHang,

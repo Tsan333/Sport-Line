@@ -18,6 +18,7 @@ public class VoucherController {
 
     @GetMapping("/voucher")
     public ResponseEntity<List<VoucherDTO>> getall(){
+        voucherService.updateActiveVoucher();
         return ResponseEntity.ok(voucherService.getall());
 
     }

@@ -102,9 +102,6 @@ public class VoucherService {
         v.setNgayBatDau(dto.getNgayBatDau());
         v.setNgayKetThuc(dto.getNgayKetThuc());
 
-        // KHÔNG set trangThai nữa, để tính động
-        // v.setTrangThai(0); // Có thể set mặc định là 0
-
         return convertDTO(voucherRepository.save(v));
     }
 
@@ -141,7 +138,7 @@ public class VoucherService {
                 .orElse(null);
     }
 
-    @Scheduled(fixedRate = 60000) // Cập nhật mỗi 60 giây
+    @Scheduled(fixedRate = 60000)
     public void updateActiveVoucher() {
         updateVoucherActive();
     }
@@ -199,8 +196,6 @@ public class VoucherService {
         }
     }
 
-
-
     public void updateVoucherForDonHang(DonHang dh, Integer idVoucher) {
 
         Voucher voucher = voucherRepository.findById(idVoucher)
@@ -239,6 +234,7 @@ public class VoucherService {
             voucherRepository.save(voucher);
         }
     }
+
     public void kiemTraDieuKienVoucher(DonHang dh, Integer idVoucher) {
         Voucher voucher = voucherRepository.findById(idVoucher)
                 .orElseThrow(() -> new RuntimeException("Voucher không tồn tại"));
@@ -271,6 +267,7 @@ public class VoucherService {
         double result = tongTien - giam;
         return result < 0 ? 0 : result;
     }
+
     //Kiểm tra xem voucher nào đủ điều kiện áp dụng cho đơn hàng
     public List<VoucherDTO> getAvailableVouchers(Integer orderId) {
         DonHang donHang = donHangRepository.findById(orderId).orElse(null);
@@ -302,5 +299,4 @@ public class VoucherService {
         result.sort((a, b) -> Boolean.compare(Boolean.TRUE.equals(b.getIsAvailable()), Boolean.TRUE.equals(a.getIsAvailable())));
         return result;
     }
-
 }

@@ -40,6 +40,7 @@ public class GioHangChiTietController {
         gioHangChiTietService.xoaTatCaTheoKhach(idKhach);
         return ResponseEntity.noContent().build();
     }
+
     @DeleteMapping("/xoa")
     public ResponseEntity<?> xoaSanPhamKhoiGio(
             @RequestParam Integer idKhachHang,
@@ -69,6 +70,4 @@ public class GioHangChiTietController {
     public ResponseEntity<Double> tongTien(@PathVariable Integer idKhachHang) {
         return ResponseEntity.ok(gioHangChiTietService.tongTien(idKhachHang));
     }
-
-
 }

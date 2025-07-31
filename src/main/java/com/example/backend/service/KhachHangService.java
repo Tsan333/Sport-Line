@@ -5,16 +5,19 @@ package com.example.backend.service;
 import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
+import com.example.backend.dto.PageReSponse;
 import com.example.backend.entity.KhachHang;
 import com.example.backend.repository.KhachHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.backend.dto.PageReSponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,7 +96,7 @@ public class KhachHangService {
         KhachHang kh = new KhachHang();
         kh.setTenKhachHang(dto.getTenKhachHang());
         kh.setEmail(dto.getEmail());
-        kh.setNgaySinh(dto.getNgaySinh());
+        kh.setNgaySinh((Date) dto.getNgaySinh());
         kh.setGioiTinh(dto.getGioiTinh());
         kh.setDiaChi(dto.getDiaChi());
         kh.setSoDienThoai(dto.getSoDienThoai());
@@ -113,8 +116,6 @@ public class KhachHangService {
 
     @Autowired
     private PasswordEncoder encoder;
-
-
 
     public void dangKyKhach(DangKyRequest req) {
         if (!req.getMatKhau().equals(req.getConfirmPassword())) {
@@ -168,7 +169,7 @@ public class KhachHangService {
                 .map(kh -> {
                     kh.setTenKhachHang(dto.getTenKhachHang());
                     kh.setEmail(dto.getEmail());
-                    kh.setNgaySinh(dto.getNgaySinh());
+                    kh.setNgaySinh((Date) dto.getNgaySinh());
                     kh.setGioiTinh(dto.getGioiTinh());
                     kh.setDiaChi(dto.getDiaChi());
                     kh.setSoDienThoai(dto.getSoDienThoai());

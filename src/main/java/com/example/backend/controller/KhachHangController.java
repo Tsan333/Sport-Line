@@ -1,8 +1,5 @@
 package com.example.backend.controller;
 
-
-
-
 import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
@@ -43,7 +40,6 @@ public class KhachHangController {
         return ResponseEntity.ok(response);
     }
 
-    // KhachHangController.java
     @PostMapping("/khachhang/create")
     public ResponseEntity<?> create(@RequestBody KhachHangReponseDTO khachHangDTO) {
         try {
@@ -71,6 +67,7 @@ public class KhachHangController {
     public ResponseEntity<KhachHangReponseDTO> update(@PathVariable int id, @RequestBody KhachHangReponseDTO dto) {
         return ResponseEntity.ok(khachHangService.update(id, dto));
     }
+
     @PostMapping("/dang-ky")
     public ResponseEntity<String> dangKy(@Valid @RequestBody DangKyRequest req) {
         khachHangService.dangKyKhach(req);

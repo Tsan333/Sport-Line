@@ -19,5 +19,4 @@ public class SPCTDTO {
     private String kichThuoc;
     private String mauSac;
     private Integer idKhuyenMai;
-
 }

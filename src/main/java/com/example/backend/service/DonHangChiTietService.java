@@ -50,13 +50,10 @@ public class DonHangChiTietService {
                 .orElse(null);
     }
 
-//    public DonHangChiTietDTO create(DonHangChiTietDTO dto) {
-//        DonHangChiTiet chiTiet = convertToEntity(dto);
-//        return convertToDTO(chiTietRepository.save(chiTiet));
-//    }
-public List<DonHangChiTietDTO> getDonHangById(Integer id) {
-    return chiTietRepository.findByDonHangId(id);
-}
+    public List<DonHangChiTietDTO> getDonHangById(Integer id) {
+        return chiTietRepository.findByDonHangId(id);
+    }
+
     public DonHangChiTietDTO create(DonHangChiTietDTO dto) {
         // 1. Lấy sản phẩm chi tiết từ DB
         SanPhamChiTiet spct = sanPhamChiTietRepository.findById(dto.getIdSanPhamChiTiet())

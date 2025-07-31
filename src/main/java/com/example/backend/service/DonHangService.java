@@ -1,4 +1,3 @@
-
 package com.example.backend.service;
 
 
@@ -27,6 +26,7 @@ public class DonHangService {
 
     @Autowired
     private DonHangChiTietRepository donHangChiTietRepository;
+
     @Autowired
     private DonHangRepository donHangRepository;
 
@@ -260,7 +260,8 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
         dto.setNgayMua(dh.getNgayMua());
         dto.setNgayTao(dh.getNgayTao());
         dto.setLoaiDonHang(dh.getLoaiDonHang());
-        dto.setTrangThai(dh.getTrangThai());
+        dh.setTrangThai(dto.getTrangThai());
+
         dto.setTongTien(dh.getTongTien());
         dto.setTongTienGiamGia(dh.getTongTienGiamGia());
         dto.setDiaChiGiaoHang(dh.getDiaChiGiaoHang());
@@ -275,9 +276,15 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
         dh.setNgayMua(dto.getNgayMua());
         dh.setNgayTao(dto.getNgayTao());
         dh.setLoaiDonHang(dto.getLoaiDonHang());
-        dh.setTrangThai(dto.getTrangThai());
+        TrangThaiDonHang.fromValue(dto.getTrangThai()).name();
+
+
         dh.setTongTien(dto.getTongTien());
         dh.setTongTienGiamGia(dto.getTongTienGiamGia());
+        dh.setDiaChiGiaoHang(dto.getDiaChiGiaoHang());
+        dh.setEmailGiaoHang(dto.getEmailGiaoHang());
+        dh.setTenNguoiNhan(dto.getTenNguoiNhan());
+        dh.setSoDienThoaiGiaoHang(dto.getSoDienThoaiGiaoHang());
 
         if (dto.getIdnhanVien() != null) {
             Optional<NhanVien> nv = nhanVienRepository.findById(dto.getIdnhanVien());
@@ -298,23 +305,7 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
 
         return dh;
     }
-//    public void capNhatTongTienDonHang(Integer idDonHang) {
-//        DonHang donHang = donHangRepository.findById(idDonHang).orElseThrow();
-//        List<DonHangChiTiet> chiTiets = donHang.getDonHangChiTiets();
-//        double tongTienGoc = 0;
-//        for (DonHangChiTiet ct : chiTiets) {
-//            tongTienGoc += ct.getThanhTien();
-//        }
-//
-//        double giam = 0.0;
-//        if (donHang.getGiamGia() != null) {
-//            giam = tinhTienGiamVoucher(tongTienGoc, donHang.getGiamGia());
-//        }
-//        donHang.setTongTienGiamGia(giam);
-//        donHang.setTongTien(tongTienGoc - giam);
-//
-//        donHangRepository.save(donHang);
-//    }
+
         public void capNhatTongTienDonHang(Integer idDonHang) {
             DonHang donHang = donHangRepository.findById(idDonHang).orElseThrow();
             List<DonHangChiTiet> chiTiets = donHangChiTietRepository.findByDonHang_Id(idDonHang);
@@ -417,6 +408,7 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
             throw new RuntimeException("Không thể hủy đơn ở trạng thái: "
                     + TrangThaiDonHang.fromValue(trangThaiCu).getDisplayName());
         }
+
         //  Cập nhật trạng thái đơn
         don.setTrangThai(TrangThaiDonHang.DA_HUY.getValue());
 
@@ -496,6 +488,7 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
     }
 
 
+
     public void capNhatTrangThai(Integer idDon, TrangThaiDonHang trangThaiMoi) {
         DonHang don = donHangRepository.findById(idDon)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
@@ -525,12 +518,5 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
             default -> false;
         };
     }
-
-
-
-
-
-
-
 
 }
