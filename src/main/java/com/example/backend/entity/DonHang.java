@@ -62,4 +62,5 @@ public class DonHang {
 
     @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<DonHangChiTiet> donHangChiTiets;
+
 }

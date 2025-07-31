@@ -80,4 +80,13 @@ public class GioHangChiTietService {
     public double tongTien(Integer idKhachHang) {
         return repo.tinhTongTienGioHang(idKhachHang);
     }
+
+    public void xoaSanPham(Integer idKhachHang, Integer idSanPhamChiTiet) {
+        GioHangChiTiet chiTiet = repo.findBySanPhamChiTietIdAndKhachHangId(idSanPhamChiTiet, idKhachHang);
+        if (chiTiet != null) {
+            repo.delete(chiTiet);
+        } else {
+            throw new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng");
+        }
+    }
 }

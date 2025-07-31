@@ -2,13 +2,12 @@
 package com.example.backend.service;
 
 
-import com.example.backend.dto.DonHangChiTietDTO;
-import com.example.backend.dto.SanPhanDTO;
 import com.example.backend.entity.SanPham;
 import com.example.backend.repository.SanPhamInterface;
-import com.example.backend.ThongBao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +39,19 @@ public class SanPhamService {
 //    public List<SanPham> getXuatXuById(Integer id) {
 //        return sanPhamRepo.findByXuatXu_Id(id);
 //    }
-    public List<SanPham> filterSanPham(Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu ,Integer trangThai) {
-        return sanPhamRepo.filterSanPham(idDanhMuc, idThuongHieu, idChatLieu, idXuatXu , trangThai);
+
+
+//    public List<SanPham> filterSanPham(Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu ,Integer trangThai) {
+//        return sanPhamRepo.filterSanPham(idDanhMuc, idThuongHieu, idChatLieu, idXuatXu , trangThai);
+//    }
+
+    public Page<SanPham> filterSanPhamPage(
+            Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu,
+            Integer trangThai, String search, int page, int size
+    ) {
+        return sanPhamRepo.filterSanPhamPage(
+                idDanhMuc, idThuongHieu, idChatLieu, idXuatXu, trangThai, search, PageRequest.of(page, size)
+        );
     }
 
     public SanPham create(SanPham sanPham) {
@@ -85,6 +95,10 @@ public class SanPhamService {
 
     public List<SanPham> getDeleted() {
         return sanPhamRepo.findAllByTrangThai(0);
+    }
+
+    public Page<SanPham> getSanPhamPage(int page, int size) {
+        return sanPhamRepo.findAll(PageRequest.of(page, size));
     }
 
 

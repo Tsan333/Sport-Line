@@ -141,7 +141,7 @@ public class VoucherService {
                 .orElse(null);
     }
 
-    @Scheduled(fixedRate = 600000) // Cập nhật mỗi 60 giây
+    @Scheduled(fixedRate = 60000) // Cập nhật mỗi 60 giây
     public void updateActiveVoucher() {
         updateVoucherActive();
     }
@@ -277,13 +277,22 @@ public class VoucherService {
         List<Voucher> allVouchers = voucherRepository.findAll();
         List<VoucherDTO> result = new ArrayList<>();
         for (Voucher v : allVouchers) {
+            // Bỏ qua voucher trạng thái = 0
+            if (v.getTrangThai() != null && v.getTrangThai() == 0) {
+                continue;
+            }
             boolean isAvailable = true;
-            try {
-                if (donHang != null) {
-                    kiemTraDieuKienVoucher(donHang, v.getId());
-                }
-            } catch (Exception e) {
+            // Kiểm tra số lượng
+            if (v.getSoLuong() == null || v.getSoLuong() <= 0) {
                 isAvailable = false;
+            } else {
+                try {
+                    if (donHang != null) {
+                        kiemTraDieuKienVoucher(donHang, v.getId());
+                    }
+                } catch (Exception e) {
+                    isAvailable = false;
+                }
             }
             VoucherDTO dto = convertDTO(v);
             dto.setIsAvailable(isAvailable);

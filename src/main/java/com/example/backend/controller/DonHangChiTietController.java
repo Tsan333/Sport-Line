@@ -44,8 +44,16 @@ public class DonHangChiTietController {
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
     @GetMapping("/donhangchitiet/don-hang/{id}")
-    public ResponseEntity<List<DonHangChiTietDTO>> getByIdDonHang(@PathVariable Integer id){
-        return ResponseEntity.ok(chiTietService.getDonHangById(id));
+    public ResponseEntity<List<DonHangChiTietDTO>> getByIdDonHang(@PathVariable Integer id) {
+        try {
+            // Tự động cập nhật giá trước khi trả về
+            chiTietService.updatePricesForOrder(id);
+
+            // Sau đó mới lấy chi tiết đơn hàng
+            return ResponseEntity.ok(chiTietService.getDonHangById(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @PostMapping("/donhangchitiet/create")
@@ -111,6 +119,15 @@ public class DonHangChiTietController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+//    @PutMapping("/donhangchitiet/update-prices/{orderId}")
+//    public ResponseEntity<?> updateOrderItemPrices(@PathVariable Integer orderId) {
+//        try {
+//            chiTietService.updatePricesForOrder(orderId);
+//            return ResponseEntity.ok("Cập nhật giá thành công");
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+//        }
+//    }
 
     @DeleteMapping("/don-hang-chi-tiet/{idDonHang}/remove-voucher")
     public ResponseEntity<?> removeVoucherFromDonHang(@PathVariable Integer idDonHang) {

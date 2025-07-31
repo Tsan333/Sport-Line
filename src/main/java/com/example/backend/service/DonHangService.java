@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +90,6 @@ public class DonHangService {
         return null;
     }
 
-    // ... existing code ...
-    // ...existing code...
     @Transactional
     public DonHangDTO updateVoucher(Integer idDonHang, Integer idgiamGia) {
         Optional<DonHang> optional = donHangRepository.findById(idDonHang);
@@ -103,6 +102,17 @@ public class DonHangService {
             // Nếu có voucher cũ, cộng lại số lượng
             if (oldVoucher != null) {
                 oldVoucher.setSoLuong(oldVoucher.getSoLuong() + 1);
+//                System.out.println("Voucher " + oldVoucher.getId() + " soLuong sau khi bo: " + oldVoucher.getSoLuong());
+
+                // Kiểm tra lại trạng thái
+                LocalDateTime now = LocalDateTime.now();
+                boolean isExpired = oldVoucher.getNgayKetThuc() != null && oldVoucher.getNgayKetThuc().isBefore(now);
+                boolean isNotStarted = oldVoucher.getNgayBatDau() != null && oldVoucher.getNgayBatDau().isAfter(now);
+                boolean isOutOfStock = oldVoucher.getSoLuong() == null || oldVoucher.getSoLuong() == 0;
+                boolean isActive = !isExpired && !isNotStarted && !isOutOfStock;
+                if (isActive) {
+                    oldVoucher.setTrangThai(1);
+                }
                 voucherRepository.save(oldVoucher);
             }
 
@@ -126,7 +136,6 @@ public class DonHangService {
         }
         return null;
     }
-// ...existing code...
 
     // Hàm tính số tiền giảm giá từ voucher
     private double tinhTienGiamVoucher(double tongTien, Voucher voucher) {
@@ -145,7 +154,8 @@ public class DonHangService {
         // Làm tròn về số nguyên nếu muốn
         return Math.round(giam);
     }
-    // ... existing code ...
+
+
     public DonHangDTO updateKhachHang(Integer idDonHang, Integer idkhachHang) {
         Optional<DonHang> optional = donHangRepository.findById(idDonHang);
         if (optional.isPresent()) {
@@ -253,6 +263,10 @@ public List<DonHangDTO> filterByTrangThaiAndLoai(Integer trangThai, String loaiD
         dto.setTrangThai(dh.getTrangThai());
         dto.setTongTien(dh.getTongTien());
         dto.setTongTienGiamGia(dh.getTongTienGiamGia());
+        dto.setDiaChiGiaoHang(dh.getDiaChiGiaoHang());
+        dto.setSoDienThoaiGiaoHang(dh.getSoDienThoaiGiaoHang());
+        dto.setEmailGiaoHang(dh.getEmailGiaoHang());
+        dto.setTenNguoiNhan(dh.getTenNguoiNhan());
         return dto;
     }
 

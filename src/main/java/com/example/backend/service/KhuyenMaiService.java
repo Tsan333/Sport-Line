@@ -118,11 +118,12 @@ public class KhuyenMaiService {
 
         for (SanPhamChiTiet sp : danhSachSanPham) {
             KhuyenMai km = sp.getKhuyenMai();
-            if (km != null &&
+            boolean hopLe = km != null &&
                     km.getTrangThai() == 1 &&
                     now.isAfter(km.getNgayBatDau()) &&
-                    now.isBefore(km.getNgayKetThuc())) {
+                    now.isBefore(km.getNgayKetThuc());
 
+            if (hopLe) {
                 Float giaTri = km.getGiaTri();
                 if (giaTri != null && giaTri > 0) {
                     double giamGia = sp.getGiaBan() * giaTri / 100.0;
@@ -131,7 +132,7 @@ public class KhuyenMaiService {
                 }
             }
 
-            // Không có khuyến mãi hợp lệ
+            sp.setKhuyenMai(null);
             sp.setGiaBanGiamGia(sp.getGiaBan());
         }
     }

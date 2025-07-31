@@ -1,15 +1,16 @@
 package com.example.backend.controller;
 
 
-import com.example.backend.dto.DonHangChiTietDTO;
-import com.example.backend.dto.SanPhanDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.example.backend.entity.SanPham;
 
 import com.example.backend.service.SanPhamService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,32 +36,20 @@ public class SanPhamRestController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-//    @GetMapping("/id-dm/{id}")
-//    public ResponseEntity<List<SanPham>> getByIdDonHang(@PathVariable Integer id){
-//        return ResponseEntity.ok(sanPhamService.getSanPhamById(id));
-//    }
-//    @GetMapping("/id-th/{id}")
-//    public ResponseEntity<List<SanPham>> getByIdTH(@PathVariable Integer id){
-//        return ResponseEntity.ok(sanPhamService.getThuongHieuById(id));
-//    }
-//    @GetMapping("/id-cl/{id}")
-//    public ResponseEntity<List<SanPham>> getByIdCL(@PathVariable Integer id){
-//        return ResponseEntity.ok(sanPhamService.getChatLieuById(id));
-//    }
-//    @GetMapping("/id-xx/{id}")
-//    public ResponseEntity<List<SanPham>> getByIdXX(@PathVariable Integer id){
-//        return ResponseEntity.ok(sanPhamService.getXuatXuById(id));
-//    }
-    @GetMapping("/bo-loc")
-    public ResponseEntity<List<SanPham>> filterSanPham(
+    @GetMapping("/phan-trang")
+    public ResponseEntity<Page<SanPham>> filterSanPhamPage(
             @RequestParam(required = false) Integer idDanhMuc,
             @RequestParam(required = false) Integer idThuongHieu,
             @RequestParam(required = false) Integer idChatLieu,
             @RequestParam(required = false) Integer idXuatXu,
-            @RequestParam(required = false) Integer trangThai
+            @RequestParam(required = false) Integer trangThai,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
     ) {
-        List<SanPham> result = sanPhamService.filterSanPham(idDanhMuc, idThuongHieu, idChatLieu, idXuatXu , trangThai);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(
+                sanPhamService.filterSanPhamPage(idDanhMuc, idThuongHieu, idChatLieu, idXuatXu, trangThai, search, page, size)
+        );
     }
 
     @PostMapping("/add")

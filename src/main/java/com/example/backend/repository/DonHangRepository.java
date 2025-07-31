@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -33,5 +34,9 @@ List<DonHang> findByTrangThaiAndLoaiDonHang(@Param("trangThai") Integer trangTha
 
     // Đếm đơn theo trạng thái
     List<DonHang> findAllByGiamGia_Id(Integer idVoucher);
+
+
+    @Query("SELECT COALESCE(SUM(dh.tongTien), 0) FROM DonHang dh WHERE dh.trangThai = 4 AND dh.ngayMua BETWEEN :start AND :end")
+    Double sumRevenueBetweenDates(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 }

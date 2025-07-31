@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
         private String loaiDonHang;
 
 
-        private Integer trangThai;
+        private Integer trangThai = 0;
 
         private String trangThaiText;
 
