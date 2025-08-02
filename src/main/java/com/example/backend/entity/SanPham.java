@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-import java.util.Date;
+import java.sql.Date;
 
 @Getter
 @Setter
@@ -34,10 +34,6 @@ public class SanPham {
     @ManyToOne
     @JoinColumn(name = "IdXuatXu", referencedColumnName = "Id")
     private XuatXu xuatXu;
-
-    @ManyToOne
-    @JoinColumn(name = "IdKhuyenMai", referencedColumnName = "Id")
-    private KhuyenMai khuyenMai;
 
     @ManyToOne
     @JoinColumn(name = "IdChatLieu", referencedColumnName = "Id")

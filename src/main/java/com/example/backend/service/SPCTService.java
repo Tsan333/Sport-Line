@@ -3,12 +3,15 @@ package com.example.backend.service;
 
 import com.example.backend.dto.SPCTDTO;
 
-import com.example.backend.entity.SanPhamChiTiet;
+import com.example.backend.dto.SPCTRequest;
+import com.example.backend.dto.SanPhamDonHangResponse;
+import com.example.backend.entity.*;
 
-import com.example.backend.repository.SanPhamChiTietRepository;
+import com.example.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +20,45 @@ public class SPCTService {
 
     @Autowired
     private SanPhamChiTietRepository spcti;
+
+    @Autowired
+    private SanPhamInterface spi;
+
+    @Autowired
+    private KichThuocInterface kti;
+
+    @Autowired
+    private MauSacInterface msi;
+
+    @Autowired
+    private KhuyenMaiRepository khuyenMaiRepository;
+
+    @Autowired
+    private KhuyenMaiService khuyenMaiService;
+
+    public SanPhamChiTiet createSanPhamChiTiet(Integer id,SPCTRequest request) {
+        request.setIdSanPham(id);
+        SanPham sanPham = spi.findById(request.getIdSanPham())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+
+        KichThuoc kichThuoc = kti.findById(request.getIdKichThuoc())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy kích thước"));
+
+        MauSac mauSac = msi.findById(request.getIdMauSac())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy màu sắc"));
+
+        SanPhamChiTiet spct = new SanPhamChiTiet();
+        spct.setSanPham(sanPham);
+        spct.setKichThuoc(kichThuoc);
+        spct.setMauSac(mauSac);
+        spct.setSoLuong(request.getSoLuong());
+        spct.setGiaBan(request.getGiaBan());
+        spct.setNgaySanXuat((Date) request.getNgaySanXuat());
+        spct.setNgayTao(LocalDateTime.now());
+        spct.setTrangThai(1); // mặc định còn bán
+
+        return spcti.save(spct);
+    }
 
     public List<SanPhamChiTiet> getAll() {
         return spcti.findAll();
@@ -27,9 +69,27 @@ public class SPCTService {
         return spcti.getAllSPCTDTO();
     }
 
-    public SPCTDTO getSPCTDTOById(Integer id) {
-        return spcti.getSPCTDTOById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
+    public List<SanPhamDonHangResponse> getSanPhamByDonHang(Integer idDonHang) {
+        return spcti.getSanPhamByDonHang(idDonHang);
+    }
+
+    public List<SanPhamChiTiet> addSanPhamDuocKhuyenMai(Integer idKhuyenMai, List<Integer> listIdSanPham) {
+        KhuyenMai khuyenMai = khuyenMaiRepository.findById(idKhuyenMai)
+                .orElseThrow(() -> new IllegalArgumentException("Khuyến mãi không tồn tại"));
+
+        List<SanPhamChiTiet> danhSachSanPham = spcti.findAllById(listIdSanPham);
+
+        for (SanPhamChiTiet sp : danhSachSanPham) {
+            sp.setKhuyenMai(khuyenMai);
+        }
+
+        khuyenMaiService.capNhatGiaKhuyenMaiChoDanhSach(danhSachSanPham);
+
+        return spcti.saveAll(danhSachSanPham);
+    }
+
+    public List<SPCTDTO> getSPCTDTOByIdSP(Integer id) {
+        return spcti.getSPCTDTOByIdSP(id);
     }
 
     public List<SPCTDTO> searchByTenSanPham(String keyword) {
