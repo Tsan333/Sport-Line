@@ -33,16 +33,10 @@ public class DonHangController {
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/donhang/getByTrangThai/{trangthai}")
-    public ResponseEntity<List<DonHangDTO>> getByTrangThai(@PathVariable Integer trangThai) {
-        return ResponseEntity.ok(donHangService.getByTrangThaiDTO(trangThai));
-    }
-
     @PostMapping("/donhang/create")
     public ResponseEntity<DonHangDTO> create(@RequestBody DonHangDTO dto) {
         return ResponseEntity.ok(donHangService.create(dto));
     }
-
 
     @PutMapping("/donhang/update/{id}")
     public ResponseEntity<DonHangDTO> update(@PathVariable Integer id, @RequestBody DonHangDTO dto) {
@@ -56,6 +50,7 @@ public class DonHangController {
         return ResponseEntity.ok().build();
     }
 
+
     // 🛒 1. Tạo đơn hàng online
     @PostMapping("/donhang/online")
     public ResponseEntity<DonHangDTO> taoDon(@RequestBody HoaDonOnlineRequest req) {
@@ -64,12 +59,12 @@ public class DonHangController {
 
     // ✅ 2. Xác nhận đơn
 
-    @PutMapping("/donhang/xac-nhan/{id}")
-    public ResponseEntity<DonHangDTO> xacNhanDon(@PathVariable Integer id) {
-        donHangService.xacNhanDon(id);
-        DonHang updated = donHangService.layChiTietDon(id);
-        return ResponseEntity.ok(new DonHangDTO(updated));
-    }
+        @PutMapping("/donhang/xac-nhan/{id}")
+        public ResponseEntity<DonHangDTO> xacNhanDon(@PathVariable Integer id) {
+            donHangService.xacNhanDon(id);
+            DonHang updated = donHangService.layChiTietDon(id);
+            return ResponseEntity.ok(new DonHangDTO(updated));
+        }
 
     // ❌ 3. Hủy đơn
     @PutMapping("/donhang/huy/{id}")
@@ -107,6 +102,12 @@ public class DonHangController {
         DonHang don = donHangService.layChiTietDon(id);
         return ResponseEntity.ok(new DonHangDTO(don));
     }
+    // 🔍 7. Lọc đơn theo trạng thái
+    @GetMapping
+    public ResponseEntity<List<DonHang>> locTheoTrangThai(@RequestParam Integer trangThai) {
+        List<DonHang> list = donHangService.layDonTheoTrangThai(trangThai);
+        return ResponseEntity.ok(list);
+    }
 
     // 📊 8. Thống kê đơn hàng
     @GetMapping("/donhang/thong-ke")
@@ -116,6 +117,7 @@ public class DonHangController {
     }
 
     @PutMapping("/don-hang/{id}/trang-thai")
+
     public ResponseEntity<?> doiTrangThai(
             @PathVariable Integer id,
             @RequestParam("value") int value
@@ -128,4 +130,18 @@ public class DonHangController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // ❌ 9. Giao hàng không thành công
+    @PutMapping("/donhang/giao-khong-thanh-cong/{id}")
+    public ResponseEntity<DonHangDTO> giaoKhongThanhCong(@PathVariable Integer id) {
+        try {
+            donHangService.danhDauGiaoKhongThanhCong(id);
+            DonHang updated = donHangService.layChiTietDon(id);
+            return ResponseEntity.ok(new DonHangDTO(updated));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+
 }
