@@ -1,10 +1,14 @@
 package com.example.backend.controller;
 
+
+
+import com.example.backend.dto.DonHangChiTietDTO;
 import com.example.backend.dto.DonHangDTO;
 import com.example.backend.entity.DonHang;
 import com.example.backend.repository.DonHangRepository;
-import com.example.backend.dto.DonHangChiTietDTO;
 import com.example.backend.service.DonHangChiTietService;
+
+
 import com.example.backend.service.DonHangService;
 import com.example.backend.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +21,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class DonHangChiTietController {
-    @Autowired
-    private DonHangService donHangService;
 
     @Autowired
     private DonHangChiTietService chiTietService;
+    @Autowired
+    private DonHangService donHangService;
 
     @Autowired
     private DonHangRepository donHangRepository;
@@ -29,15 +33,14 @@ public class DonHangChiTietController {
     @Autowired
     private VoucherService voucherService;
 
-
-    @GetMapping("/don-hang-chi-tiet")
-    public ResponseEntity<List<DonHangDTO>> getAll() {
-        return ResponseEntity.ok(donHangService.getAll());
+    @GetMapping("/donhangchitiet")
+    public ResponseEntity<List<DonHangChiTietDTO>> getAll() {
+        return ResponseEntity.ok(chiTietService.getAll());
     }
 
-    @GetMapping("/don-hang-chi-tiet/{id}")
-    public ResponseEntity<DonHangDTO> getById(@PathVariable Integer id) {
-        DonHangDTO dto = donHangService.getById(id);
+    @GetMapping("/donhangchitiet/{id}")
+    public ResponseEntity<DonHangChiTietDTO> getById(@PathVariable int id) {
+        DonHangChiTietDTO dto = chiTietService.getById(id);
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
     @GetMapping("/donhangchitiet/don-hang/{id}")
@@ -53,23 +56,52 @@ public class DonHangChiTietController {
         }
     }
 
+    @PostMapping("/donhangchitiet/create")
+    public ResponseEntity<DonHangChiTietDTO> create(@RequestBody DonHangChiTietDTO dto) {
+        return ResponseEntity.ok(chiTietService.create(dto));
+    }
+
+    @PutMapping("/donhangchitiet/update/{id}")
+    public ResponseEntity<DonHangChiTietDTO> update(@PathVariable int id, @RequestBody DonHangChiTietDTO dto) {
+        DonHangChiTietDTO updated = chiTietService.update(id, dto);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/donhangchitiet/delete/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        chiTietService.delete(id);
+        return ResponseEntity.ok().build();
+    }
+
+
+
+    @GetMapping("/don-hang-chi-tiet")
+    public ResponseEntity<List<DonHangDTO>> getAll2() {
+        return ResponseEntity.ok(donHangService.getAll());
+    }
+
+    @GetMapping("/don-hang-chi-tiet/{id}")
+    public ResponseEntity<DonHangDTO> getById(@PathVariable Integer id) {
+        DonHangDTO dto = donHangService.getById(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+    }
+
     @PostMapping("/don-hang-chi-tiet/create")
-    public ResponseEntity<DonHangDTO> create(@RequestBody DonHangDTO dto) {
+    public ResponseEntity<DonHangDTO> create2(@RequestBody DonHangDTO dto) {
         return ResponseEntity.ok(donHangService.create(dto));
     }
 
     @PutMapping("/don-hang-chi-tiet/update/{id}")
-    public ResponseEntity<DonHangDTO> update(@PathVariable Integer id, @RequestBody DonHangDTO dto) {
+    public ResponseEntity<DonHangDTO> update2(@PathVariable Integer id, @RequestBody DonHangDTO dto) {
         DonHangDTO updated = donHangService.update(id, dto);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/don-hang-chi-tiet/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete2(@PathVariable Integer id) {
         donHangService.delete(id);
         return ResponseEntity.ok().build();
     }
-
     @PostMapping("/don-hang-chi-tiet/{idDonHang}/apply-voucher/{idVoucher}")
     public ResponseEntity<?> applyVoucherToDonHang(
             @PathVariable Integer idDonHang,
@@ -87,6 +119,15 @@ public class DonHangChiTietController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+//    @PutMapping("/donhangchitiet/update-prices/{orderId}")
+//    public ResponseEntity<?> updateOrderItemPrices(@PathVariable Integer orderId) {
+//        try {
+//            chiTietService.updatePricesForOrder(orderId);
+//            return ResponseEntity.ok("Cập nhật giá thành công");
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+//        }
+//    }
 
     @DeleteMapping("/don-hang-chi-tiet/{idDonHang}/remove-voucher")
     public ResponseEntity<?> removeVoucherFromDonHang(@PathVariable Integer idDonHang) {
