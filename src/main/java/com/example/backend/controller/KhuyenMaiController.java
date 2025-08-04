@@ -11,6 +11,7 @@ import com.example.backend.entity.SanPhamChiTiet;
 import com.example.backend.service.KhuyenMaiService;
 import com.example.backend.service.SPCTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,28 @@ public class KhuyenMaiController {
     public ResponseEntity<KhuyenMai> tat(@PathVariable Integer id){
         return ResponseEntity.ok(khuyenMaiService.tatKhuyenMai(id));
     }
+    @GetMapping("/san-pham-chi-tiet/available-for-promotion/{khuyenMaiId}")
+    public ResponseEntity<List<SanPhamChiTiet>> getAvailableProductsForPromotion(@PathVariable Integer khuyenMaiId) {
+        try {
+            List<SanPhamChiTiet> availableProducts = spctService.getAvailableProductsForPromotion(khuyenMaiId);
+            return ResponseEntity.ok(availableProducts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PostMapping("/khuyen-mai/{khuyenMaiId}/bo-ap-dung")
+    public ResponseEntity<String> removePromotionFromProducts(
+            @PathVariable Integer khuyenMaiId,
+            @RequestBody List<Integer> productIds) {
+        try {
+            spctService.removePromotionFromProducts(khuyenMaiId, productIds);
+            return ResponseEntity.ok("Bỏ áp dụng khuyến mãi thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi bỏ áp dụng khuyến mãi");
+        }
+    }
+
 
     @GetMapping("/khuyenmai")
     public ResponseEntity<List<KhuyenMaiDTO>> getall(){

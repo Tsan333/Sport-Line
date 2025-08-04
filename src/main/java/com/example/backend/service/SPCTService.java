@@ -10,16 +10,20 @@ import com.example.backend.entity.*;
 import com.example.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SPCTService {
 
     @Autowired
     private SanPhamChiTietRepository spcti;
+
 
     @Autowired
     private SanPhamInterface spi;
@@ -36,8 +40,17 @@ public class SPCTService {
     @Autowired
     private KhuyenMaiService khuyenMaiService;
 
-    public SanPhamChiTiet createSanPhamChiTiet(Integer id,SPCTRequest request) {
+    public SanPhamChiTiet createSanPhamChiTiet(Integer id, SPCTRequest request) {
         request.setIdSanPham(id);
+
+        // Kiểm tra trùng biến thể
+        boolean exists = spcti.existsBySanPham_IdAndMauSac_IdAndKichThuoc_Id(
+                id, request.getIdMauSac(), request.getIdKichThuoc()
+        );
+        if (exists) {
+            throw new RuntimeException("Biến thể với màu sắc và kích thước này đã tồn tại!");
+        }
+
         SanPham sanPham = spi.findById(request.getIdSanPham())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
@@ -59,7 +72,52 @@ public class SPCTService {
 
         return spcti.save(spct);
     }
+    public SanPhamChiTiet updateSanPhamChiTiet(Integer idSpct, SPCTRequest request) {
+        // Tìm biến thể cũ
+        SanPhamChiTiet spct = spcti.findById(idSpct)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể sản phẩm"));
 
+        // Lấy id sản phẩm, id màu sắc, id kích thước mới (ưu tiên giá trị mới, nếu không có thì lấy từ spct cũ)
+        Integer idSanPham = request.getIdSanPham() != null ? request.getIdSanPham() : spct.getSanPham().getId();
+        Integer idMauSac = request.getIdMauSac() != null ? request.getIdMauSac() : spct.getMauSac().getId();
+        Integer idKichThuoc = request.getIdKichThuoc() != null ? request.getIdKichThuoc() : spct.getKichThuoc().getId();
+
+        // Kiểm tra trùng biến thể (trừ chính nó)
+        boolean exists = spcti.existsBySanPham_IdAndMauSac_IdAndKichThuoc_IdAndIdNot(
+                idSanPham, idMauSac, idKichThuoc, idSpct
+        );
+        if (exists) {
+            throw new RuntimeException("Biến thể này đã tồn tại!");
+        }
+
+        // Nếu muốn cho phép sửa các trường này:
+        if (request.getIdSanPham() != null) {
+            SanPham sanPham = spi.findById(request.getIdSanPham())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+            spct.setSanPham(sanPham);
+        }
+        if (request.getIdKichThuoc() != null) {
+            KichThuoc kichThuoc = kti.findById(request.getIdKichThuoc())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy kích thước"));
+            spct.setKichThuoc(kichThuoc);
+        }
+        if (request.getIdMauSac() != null) {
+            MauSac mauSac = msi.findById(request.getIdMauSac())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy màu sắc"));
+            spct.setMauSac(mauSac);
+        }
+        if (request.getSoLuong() != null) {
+            spct.setSoLuong(request.getSoLuong());
+        }
+        if (request.getGiaBan() != null) {
+            spct.setGiaBan(request.getGiaBan());
+        }
+        if (request.getNgaySanXuat() != null) {
+            spct.setNgaySanXuat((Date) request.getNgaySanXuat());
+        }
+
+        return spcti.save(spct);
+    }
     public List<SanPhamChiTiet> getAll() {
         return spcti.findAll();
     }
@@ -73,6 +131,7 @@ public class SPCTService {
         return spcti.getSanPhamByDonHang(idDonHang);
     }
 
+    // Cập nhật method hiện tại trong SPCTService.java
     public List<SanPhamChiTiet> addSanPhamDuocKhuyenMai(Integer idKhuyenMai, List<Integer> listIdSanPham) {
         KhuyenMai khuyenMai = khuyenMaiRepository.findById(idKhuyenMai)
                 .orElseThrow(() -> new IllegalArgumentException("Khuyến mãi không tồn tại"));
@@ -80,28 +139,64 @@ public class SPCTService {
         List<SanPhamChiTiet> danhSachSanPham = spcti.findAllById(listIdSanPham);
 
         for (SanPhamChiTiet sp : danhSachSanPham) {
+            // Kiểm tra xem sản phẩm đã được áp dụng khuyến mãi khác chưa
+            if (sp.getKhuyenMai() != null && !sp.getKhuyenMai().getId().equals(idKhuyenMai)) {
+                throw new RuntimeException("Sản phẩm " + sp.getSanPham().getTenSanPham() +
+                        " đã được áp dụng khuyến mãi khác: " + sp.getKhuyenMai().getTenKhuyenMai());
+            }
             sp.setKhuyenMai(khuyenMai);
         }
 
         khuyenMaiService.capNhatGiaKhuyenMaiChoDanhSach(danhSachSanPham);
 
+        // Cập nhật trạng thái khuyến mãi thành 1 (đã có sản phẩm áp dụng)
+        khuyenMai.setTrangThai(1);
+        khuyenMaiRepository.save(khuyenMai);
+
         return spcti.saveAll(danhSachSanPham);
     }
 
-    public List<SPCTDTO> getSPCTDTOByIdSP(Integer id) {
-        return spcti.getSPCTDTOByIdSP(id);
+    public List<SanPhamChiTiet> getSPCTDTOById(Integer id) {
+        return spcti.findBySanPham_Id(id);
     }
-
+    public SPCTDTO getSPCTDTOByIdSPCT(Integer id) {
+        return spcti.getSPCTDTOById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
+    }
+    public List<SanPhamChiTiet> getThungrac(Integer id) {
+        return spcti.findBySanPham_IdAndTrangThai(id,0);
+    }
     public List<SPCTDTO> searchByTenSanPham(String keyword) {
         return spcti.searchByTenSanPham(keyword);
     }
-
+    public List<SanPhamChiTiet> filterSPCT(Integer sanPhamId, Integer mauSacId, Integer kichThuocId, Integer trangThai) {
+        return spcti.filterSPCT(sanPhamId, mauSacId, kichThuocId, trangThai);
+    }
 
     public SanPhamChiTiet findById(Integer id) {
         return spcti.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết"));
     }
-
+    public void khoi_phuc(Integer id) {
+        Optional<SanPhamChiTiet> optional = spcti.findById(id);
+        if (optional.isPresent()) {
+            SanPhamChiTiet spct = optional.get();
+            spct.setTrangThai(1); // 1 = đang bán, 0 = đã xóa
+            spcti.save(spct);
+        } else {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
+        }
+    }
+    public void xoa_mem(Integer id) {
+        Optional<SanPhamChiTiet> optional = spcti.findById(id);
+        if (optional.isPresent()) {
+            SanPhamChiTiet spct = optional.get();
+            spct.setTrangThai(0); // 1 = đang bán, 0 = đã xóa
+            spcti.save(spct);
+        } else {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
+        }
+    }
     public SanPhamChiTiet create(SanPhamChiTiet s) {
         s.setNgayTao(LocalDateTime.now());
         return spcti.save(s);
@@ -116,4 +211,44 @@ public class SPCTService {
     public void delete(Integer id) {
         spcti.deleteById(id);
     }
+
+    // Thêm vào SPCTService.java
+    public List<SanPhamChiTiet> getAvailableProductsForPromotion(Integer khuyenMaiId) {
+        // Lấy sản phẩm chưa được áp dụng khuyến mãi nào (khuyenMai = null)
+        // HOẶC đang áp dụng khuyến mãi này (khuyenMai.id = khuyenMaiId)
+        return spcti.findByKhuyenMaiIsNullOrKhuyenMaiId(khuyenMaiId);
+    }
+
+    @Transactional
+    public void removePromotionFromProducts(Integer khuyenMaiId, List<Integer> productIds) {
+        // Bỏ khuyến mãi khỏi sản phẩm
+        for (Integer productId : productIds) {
+            SanPhamChiTiet spct = spcti.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+
+            if (spct.getKhuyenMai() != null && spct.getKhuyenMai().getId().equals(khuyenMaiId)) {
+                spct.setKhuyenMai(null);
+                spct.setGiaBanGiamGia(spct.getGiaBan()); // Reset giá về giá gốc
+                spcti.save(spct);
+            }
+        }
+
+        // Kiểm tra xem khuyến mãi còn sản phẩm nào áp dụng không
+        long count = spcti.countByKhuyenMaiId(khuyenMaiId);
+        if (count == 0) {
+            // Nếu không còn sản phẩm nào áp dụng, set trạng thái về 0
+            KhuyenMai khuyenMai = khuyenMaiRepository.findById(khuyenMaiId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi"));
+            khuyenMai.setTrangThai(0);
+            khuyenMaiRepository.save(khuyenMai);
+        }
+    }
+
+
+
+
+
+
+
+
 }

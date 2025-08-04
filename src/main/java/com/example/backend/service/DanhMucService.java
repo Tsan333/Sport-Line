@@ -4,6 +4,7 @@ package com.example.backend.service;
 
 
 import com.example.backend.entity.DanhMuc;
+import com.example.backend.entity.KichThuoc;
 import com.example.backend.repository.DanhMucInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,9 @@ public class DanhMucService {
     public List<DanhMuc> getAll() {
         return dmi.findAllByTrangThai(1);
     }
-
+    public List<DanhMuc> getAllFull() {
+        return dmi.findAll();
+    }
     public DanhMuc getById(Integer id) {
         return dmi.findById(id).orElse(null);
     }
@@ -63,6 +66,12 @@ public class DanhMucService {
         danhMuc.setTrangThai(0);
         DanhMuc saved = dmi.save(danhMuc);
         return ResponseEntity.ok(saved);
+    }
+    public void khoiPhucDanhMuc(Integer id) {
+        DanhMuc dm = dmi.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu!"));
+        dm.setTrangThai(1); // 1 = Đang hoạt động
+        dmi.save(dm);
     }
 
     public List<DanhMuc> getThungRac() {

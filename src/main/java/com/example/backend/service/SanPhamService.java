@@ -6,6 +6,8 @@ import com.example.backend.entity.SanPham;
 import com.example.backend.repository.SanPhamInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +20,38 @@ public class SanPhamService {
     private SanPhamInterface sanPhamRepo;
 
     public List<SanPham> getAllActive() {
-        return sanPhamRepo.findAllByTrangThai(1);
+        return sanPhamRepo.findAll();
     }
 
     public SanPham getById(Integer id) {
         return sanPhamRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+    }
+//    public List<SanPham> getSanPhamById(Integer id) {
+//        return sanPhamRepo.findByDanhMuc_Id(id);
+//    }
+//    public List<SanPham> getThuongHieuById(Integer id) {
+//        return sanPhamRepo.findByThuongHieu_Id(id);
+//    }
+//    public List<SanPham> getChatLieuById(Integer id) {
+//        return sanPhamRepo.findByChatLieu_Id(id);
+//    }
+//    public List<SanPham> getXuatXuById(Integer id) {
+//        return sanPhamRepo.findByXuatXu_Id(id);
+//    }
+
+
+//    public List<SanPham> filterSanPham(Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu ,Integer trangThai) {
+//        return sanPhamRepo.filterSanPham(idDanhMuc, idThuongHieu, idChatLieu, idXuatXu , trangThai);
+//    }
+
+    public Page<SanPham> filterSanPhamPage(
+            Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu,
+            Integer trangThai, String search, int page, int size
+    ) {
+        return sanPhamRepo.filterSanPhamPage(
+                idDanhMuc, idThuongHieu, idChatLieu, idXuatXu, trangThai, search, PageRequest.of(page, size)
+        );
     }
 
     public SanPham create(SanPham sanPham) {
@@ -54,9 +82,33 @@ public class SanPhamService {
         sanPham.setTrangThai(0);
         sanPhamRepo.save(sanPham);
     }
+    public void restoreSanPham(Integer id) {
+        Optional<SanPham> optional = sanPhamRepo.findById(id);
+        if (optional.isPresent()) {
+            SanPham sp = optional.get();
+            sp.setTrangThai(1); // 1 = đang bán, 0 = đã xóa
+            sanPhamRepo.save(sp);
+        } else {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
+        }
+    }
 
     public List<SanPham> getDeleted() {
         return sanPhamRepo.findAllByTrangThai(0);
     }
+
+    public Page<SanPham> getSanPhamPage(int page, int size) {
+        return sanPhamRepo.findAll(PageRequest.of(page, size));
+    }
+
+
+
+
+
+
+
+
+
+
 }
 

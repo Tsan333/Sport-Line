@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -22,7 +23,6 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
     public AuthResponse dangNhap(DangNhapRequest req) {
         String email = req.getEmail();
         String matKhau = req.getMatKhau();
@@ -31,12 +31,10 @@ public class AuthService {
             throw new RuntimeException("Email hoặc mật khẩu không được để trống!");
         }
 
-
         Optional<KhachHang> khOpt = khachHangRepo.findByEmail(email.trim());
         if (khOpt.isPresent()) {
             KhachHang kh = khOpt.get();
             String storedPassword = kh.getMatKhau();
-
 
             if (storedPassword == null) {
                 throw new RuntimeException("Tài khoản không có mật khẩu!");
@@ -50,7 +48,6 @@ public class AuthService {
                 if (!storedPassword.equals(matKhau)) {
                     throw new RuntimeException("Mật khẩu không đúng (dữ liệu cũ)!");
                 }
-
             }
 
             if (Boolean.FALSE.equals(kh.getTrangThai())) {
@@ -59,7 +56,6 @@ public class AuthService {
 
             return new AuthResponse(kh.getId(), kh.getTenKhachHang(), "KHACH", "/trang-chu");
         }
-
 
         Optional<NhanVien> nvOpt = nhanVienRepo.findByEmail(email.trim());
         if (nvOpt.isPresent()) {
@@ -88,5 +84,42 @@ public class AuthService {
         }
 
         throw new RuntimeException("Email không tồn tại trong hệ thống!");
+    }
+
+    public AuthResponse dangNhapGoogle(String email, String name, String picture) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new RuntimeException("Email không được để trống!");
+        }
+
+        // Kiểm tra xem user đã tồn tại chưa
+        Optional<KhachHang> khOpt = khachHangRepo.findByEmail(email.trim());
+        KhachHang khachHang;
+
+        if (khOpt.isPresent()) {
+            // User đã tồn tại
+            khachHang = khOpt.get();
+
+            // Kiểm tra trạng thái
+            if (Boolean.FALSE.equals(khachHang.getTrangThai())) {
+                throw new RuntimeException("Tài khoản đang bị khoá!");
+            }
+
+            // Cập nhật thông tin nếu cần
+            if (name != null && !name.equals(khachHang.getTenKhachHang())) {
+                khachHang.setTenKhachHang(name);
+                khachHangRepo.save(khachHang);
+            }
+        } else {
+            // Tạo user mới
+            khachHang = KhachHang.builder()
+                    .email(email.trim())
+                    .tenKhachHang(name != null ? name : "Khách hàng")
+                    .matKhau(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .trangThai(true)
+                    .build();
+            khachHangRepo.save(khachHang);
+        }
+
+        return new AuthResponse(khachHang.getId(), khachHang.getTenKhachHang(), "KHACH", "/trang-chu");
     }
 }

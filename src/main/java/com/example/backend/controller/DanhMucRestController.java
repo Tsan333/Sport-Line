@@ -15,6 +15,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/danh-muc")
+
+
 public class DanhMucRestController {
 
     @Autowired
@@ -23,6 +25,11 @@ public class DanhMucRestController {
     @GetMapping("/getAll")
     public List<DanhMuc> getAll() {
         return danhMucService.getAll();
+    }
+
+    @GetMapping("/getAllFull")
+    public List<DanhMuc> getAllFull() {
+        return danhMucService.getAllFull();
     }
 
     @GetMapping("/getById/{id}")
@@ -38,6 +45,11 @@ public class DanhMucRestController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody DanhMuc danhMuc) {
         return danhMucService.update(id, danhMuc);
+    }
+    @PutMapping("/khoi-phuc/{id}")
+    public ResponseEntity<?> khoiPhucDanhMuc(@PathVariable Integer id) {
+        danhMucService.khoiPhucDanhMuc(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/del/{id}")

@@ -2,8 +2,9 @@ package com.example.backend.repository;
 
 
 import com.example.backend.dto.SPCTDTO;
-import com.example.backend.dto.SPCTRequest;
 import com.example.backend.dto.SanPhamDonHangResponse;
+import com.example.backend.entity.KichThuoc;
+import com.example.backend.entity.SanPham;
 import com.example.backend.entity.SanPhamChiTiet;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,22 +18,26 @@ import java.util.Optional;
 
 @Repository
 public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,Integer> {
-
     @Query(
             """
-            SELECT new com.example.backend.dto.SPCTDTO(
-                spct.id,
-                sp.tenSanPham,
-                spct.soLuong,
-                spct.giaBan,
-                spct.giaBanGiamGia,
-                kt.tenKichThuoc,
-                ms.tenMauSac
-            )
-            FROM SanPhamChiTiet spct
-            JOIN spct.sanPham sp
-            JOIN spct.kichThuoc kt
-            JOIN spct.mauSac ms
+
+                    SELECT new com.example.backend.dto.SPCTDTO(
+                    spct.id,
+                    sp.imanges,
+                    sp.tenSanPham,
+                    spct.soLuong,
+                    spct.giaBan,
+                    spct.giaBanGiamGia,
+                    kt.tenKichThuoc,
+                    ms.tenMauSac,
+                    spct.khuyenMai.id 
+                )
+                FROM SanPhamChiTiet spct
+                JOIN spct.sanPham sp
+                JOIN spct.kichThuoc kt
+                JOIN spct.mauSac ms
+                WHERE sp.trangThai = 1
+                          And spct.trangThai = 1
             """
     )
     List<SPCTDTO> getAllSPCTDTO();
@@ -41,18 +46,20 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
             """
             SELECT new com.example.backend.dto.SPCTDTO(
                 spct.id,
+                sp.imanges,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
                 spct.giaBanGiamGia,
                 kt.tenKichThuoc,
-                ms.tenMauSac
+                ms.tenMauSac,
+                spct.khuyenMai.id
             )
             FROM SanPhamChiTiet spct
             JOIN spct.sanPham sp
             JOIN spct.kichThuoc kt
             JOIN spct.mauSac ms
-            where spct.id = :id
+                    WHERE spct.id = :id
             """
     )
     Optional<SPCTDTO> getSPCTDTOById(Integer id);
@@ -80,33 +87,14 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
             """
             SELECT new com.example.backend.dto.SPCTDTO(
                 spct.id,
+                sp.imanges,
                 sp.tenSanPham,
                 spct.soLuong,
                 spct.giaBan,
                 spct.giaBanGiamGia,
                 kt.tenKichThuoc,
-                ms.tenMauSac
-            )
-            FROM SanPhamChiTiet spct
-            JOIN spct.sanPham sp
-            JOIN spct.kichThuoc kt
-            JOIN spct.mauSac ms
-            where sp.id = :id
-            """
-    )
-    List<SPCTDTO> getSPCTDTOByIdSP(Integer id);
-
-
-    @Query(
-            """
-            SELECT new com.example.backend.dto.SPCTDTO(
-                spct.id,
-                sp.tenSanPham,
-                spct.soLuong,
-                spct.giaBan,
-                spct.giaBanGiamGia,
-                kt.tenKichThuoc,
-                ms.tenMauSac
+                ms.tenMauSac,
+                spct.khuyenMai.id 
             )
             FROM SanPhamChiTiet spct
             JOIN spct.sanPham sp
@@ -115,8 +103,43 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
             WHERE LOWER(sp.tenSanPham) LIKE LOWER(CONCAT('%', :keyword, '%'))
             """
     )
+
+
     List<SPCTDTO> searchByTenSanPham(@Param("keyword") String keyword);
 
-    List<SanPhamChiTiet> findByKhuyenMai_Id(Integer idKhuyetMai);
+    List<SanPhamChiTiet> findBySanPham_IdAndTrangThai(Integer sanPhamId, Integer trangThai);
+    List<SanPhamChiTiet> findBySanPham_Id(Integer sanPhamId);
+    boolean existsBySanPham_IdAndMauSac_IdAndKichThuoc_Id(Integer idSanPham, Integer idMauSac, Integer idKichThuoc);
+    boolean existsBySanPham_IdAndMauSac_IdAndKichThuoc_IdAndIdNot(
+            Integer idSanPham, Integer idMauSac, Integer idKichThuoc, Integer idNot
+    );
+    @Query("""
+    SELECT spct FROM SanPhamChiTiet spct
+    WHERE spct.sanPham.id = :sanPhamId
+    AND (:mauSacId IS NULL OR spct.mauSac.id = :mauSacId)
+    AND (:kichThuocId IS NULL OR spct.kichThuoc.id = :kichThuocId)
+    AND (:trangThai IS NULL OR spct.trangThai = :trangThai)
+""")
+    List<SanPhamChiTiet> filterSPCT(
+            @Param("sanPhamId") Integer sanPhamId,
+            @Param("mauSacId") Integer mauSacId,
+            @Param("kichThuocId") Integer kichThuocId,
+            @Param("trangThai") Integer trangThai
+    );
+
+
+    List<SanPhamChiTiet> findByKhuyenMai_Id(Integer khuyenMaiId);
+
+
+    @Query("SELECT spct FROM SanPhamChiTiet spct WHERE spct.khuyenMai IS NULL OR spct.khuyenMai.id = :khuyenMaiId")
+    List<SanPhamChiTiet> findByKhuyenMaiIsNullOrKhuyenMaiId(@Param("khuyenMaiId") Integer khuyenMaiId);
+
+    long countByKhuyenMaiId(Integer khuyenMaiId);
+
+
+
+
+
+
 
 }

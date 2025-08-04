@@ -32,13 +32,13 @@ public class NhanVienService {
     public NhanVienDTO convertDTO (NhanVien nv){
 
         return new NhanVienDTO(
-          nv.getId(),
-          nv.getTenNhanVien(),
-          nv.getEmail(),
-          nv.getSoDienThoai(),
-          nv.getNgaySinh(),
-          nv.getGioiTinh(),
-          nv.getDiaChi(),
+                nv.getId(),
+                nv.getTenNhanVien(),
+                nv.getEmail(),
+                nv.getSoDienThoai(),
+                nv.getNgaySinh(),
+                nv.getGioiTinh(),
+                nv.getDiaChi(),
                 nv.getVaiTro(),
                 nv.getCccd(),
                 nv.getTrangThai()

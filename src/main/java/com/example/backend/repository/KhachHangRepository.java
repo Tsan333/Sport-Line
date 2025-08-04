@@ -13,9 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface KhachHangRepository extends JpaRepository<KhachHang,Integer> {
-
+    Optional<KhachHang> findBySoDienThoai(String soDienThoai);
     Optional<KhachHang> findByEmail(String email);
-
     boolean existsByEmail(String email);
 
     Page<KhachHang> findAll(Pageable pageable);
@@ -26,5 +25,4 @@ public interface KhachHangRepository extends JpaRepository<KhachHang,Integer> {
             "LOWER(kh.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(kh.soDienThoai) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<KhachHang> search(@Param("keyword") String keyword);
-
 }

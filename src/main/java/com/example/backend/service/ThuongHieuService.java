@@ -21,6 +21,9 @@ public class ThuongHieuService {
     public List<ThuongHieu> getAll() {
         return thi.findAllByTrangThai(1);
     }
+    public List<ThuongHieu> getAllFull() {
+        return thi.findAll();
+    }
 
     public ThuongHieu getById(Integer id) {
         return thi.findById(id).orElse(null);
@@ -59,6 +62,12 @@ public class ThuongHieuService {
         ThuongHieu thuongHieu = optionalThuongHieu.get();
         thuongHieu.setTrangThai(0);
         return ResponseEntity.ok(thi.save(thuongHieu));
+    }
+    public void khoiPhucThuongHieu(Integer id) {
+        ThuongHieu th = thi.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu!"));
+        th.setTrangThai(1); // 1 = Đang hoạt động
+        thi.save(th);
     }
 
     public List<ThuongHieu> getThungRac() {

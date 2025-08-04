@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,8 @@ public class VoucherService {
     @Autowired
     private DonHangRepository donHangRepository;
 
-    public VoucherDTO convertDTO(Voucher voucher){
-        return new VoucherDTO(
+    public VoucherDTO convertDTO(Voucher voucher, Boolean isAvailable){
+        VoucherDTO dto = new VoucherDTO(
                 voucher.getId(),
                 voucher.getMaVoucher(),
                 voucher.getTenVoucher(),
@@ -37,9 +38,15 @@ public class VoucherService {
                 voucher.getDonToiThieu(),
                 voucher.getNgayBatDau(),
                 voucher.getNgayKetThuc(),
-                voucher.getTrangThai()
-
+                null, // Không set trangThai từ database
+                isAvailable
         );
+        // Trạng thái sẽ được tính động bởi getTrangThai()
+        return dto;
+    }
+    //Hàm 1 tham số dụng cho các hàm crud
+    public VoucherDTO convertDTO(Voucher voucher) {
+        return convertDTO(voucher, null); // hoặc true nếu muốn mặc định là đủ điều kiện
     }
 
     // ham lay all voucher
@@ -56,9 +63,11 @@ public class VoucherService {
                         voucher.getDonToiThieu(),
                         voucher.getNgayBatDau(),
                         voucher.getNgayKetThuc(),
-                        voucher.getTrangThai()
+                        voucher.getTrangThai(),
+                        null // hoặc true nếu muốn mặc định là đủ điều kiện
                 )).toList();
     }
+
 
     //ham lay danh sach theo id
     public VoucherDTO findById(Integer id){
@@ -74,13 +83,17 @@ public class VoucherService {
                         voucher.getDonToiThieu(),
                         voucher.getNgayBatDau(),
                         voucher.getNgayKetThuc(),
-                        voucher.getTrangThai()
+                        voucher.getTrangThai(),
+                        null // hoặc true
                 ))
                 .orElse(null);
     }
 
     // ham create voucher
-    public VoucherDTO create(VoucherDTO dto){
+
+    public VoucherDTO create(VoucherDTO dto) {
+
+
         Voucher v = new Voucher();
         v.setMaVoucher(dto.getMaVoucher());
         v.setTenVoucher(dto.getTenVoucher());
@@ -91,19 +104,24 @@ public class VoucherService {
         v.setDonToiThieu(dto.getDonToiThieu());
         v.setNgayBatDau(dto.getNgayBatDau());
         v.setNgayKetThuc(dto.getNgayKetThuc());
-        v.setTrangThai(dto.getTrangThai());
 
         return convertDTO(voucherRepository.save(v));
-
     }
+
+
+
 
     // ham delete voucher
     public boolean delete(Integer id){
-        if (voucherRepository.existsById(id)) {
-            voucherRepository.deleteById(id);
-            return true;
+        Voucher voucher = voucherRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Voucher không tồn tại"));
+        // Kiểm tra có đơn hàng nào đang dùng voucher này không
+        List<DonHang> donHangs = donHangRepository.findAllByGiamGia_Id(id);
+        if (!donHangs.isEmpty()) {
+            throw new RuntimeException("Không thể xóa voucher vì đang được áp dụng cho đơn hàng!");
         }
-        return false;
+        voucherRepository.deleteById(id);
+        return true;
     }
 
     //ham update voucher
@@ -126,7 +144,7 @@ public class VoucherService {
                 .orElse(null);
     }
 
-    @Scheduled(fixedRate = 6000000) // Cập nhật mỗi 60 giây
+    @Scheduled(fixedRate = 60000) // Cập nhật mỗi 60 giây
     public void updateActiveVoucher() {
         updateVoucherActive();
     }
@@ -184,6 +202,8 @@ public class VoucherService {
         }
     }
 
+
+
     public void updateVoucherForDonHang(DonHang dh, Integer idVoucher) {
 
         Voucher voucher = voucherRepository.findById(idVoucher)
@@ -222,6 +242,25 @@ public class VoucherService {
             voucherRepository.save(voucher);
         }
     }
+    public void kiemTraDieuKienVoucher(DonHang dh, Integer idVoucher) {
+        Voucher voucher = voucherRepository.findById(idVoucher)
+                .orElseThrow(() -> new RuntimeException("Voucher không tồn tại"));
+
+        double tongTien = dh.getTongTien();
+
+        if (voucher.getTrangThai() == null || voucher.getTrangThai() != 1) {
+            throw new RuntimeException("Voucher không hoạt động");
+        }
+        if (voucher.getSoLuong() == null || voucher.getSoLuong() < 0) {
+            throw new RuntimeException("Voucher đã hết lượt sử dụng");
+        }
+        if (voucher.getNgayBatDau().isAfter(LocalDateTime.now()) || voucher.getNgayKetThuc().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Voucher không còn hiệu lực theo thời gian");
+        }
+        if (voucher.getDonToiThieu() != null && tongTien < voucher.getDonToiThieu()) {
+            throw new RuntimeException("Đơn hàng không đủ điều kiện áp dụng voucher");
+        }
+    }
 
     private double tinhTongTienSauGiam(double tongTien, Voucher voucher) {
         double giam = 0.0;
@@ -235,4 +274,36 @@ public class VoucherService {
         double result = tongTien - giam;
         return result < 0 ? 0 : result;
     }
+    //Kiểm tra xem voucher nào đủ điều kiện áp dụng cho đơn hàng
+    public List<VoucherDTO> getAvailableVouchers(Integer orderId) {
+        DonHang donHang = donHangRepository.findById(orderId).orElse(null);
+        List<Voucher> allVouchers = voucherRepository.findAll();
+        List<VoucherDTO> result = new ArrayList<>();
+        for (Voucher v : allVouchers) {
+            // Bỏ qua voucher trạng thái = 0
+            if (v.getTrangThai() != null && v.getTrangThai() == 0) {
+                continue;
+            }
+            boolean isAvailable = true;
+            // Kiểm tra số lượng
+            if (v.getSoLuong() == null || v.getSoLuong() <= 0) {
+                isAvailable = false;
+            } else {
+                try {
+                    if (donHang != null) {
+                        kiemTraDieuKienVoucher(donHang, v.getId());
+                    }
+                } catch (Exception e) {
+                    isAvailable = false;
+                }
+            }
+            VoucherDTO dto = convertDTO(v);
+            dto.setIsAvailable(isAvailable);
+            result.add(dto);
+        }
+        // Sắp xếp voucher đủ điều kiện lên đầu (nếu muốn)
+        result.sort((a, b) -> Boolean.compare(Boolean.TRUE.equals(b.getIsAvailable()), Boolean.TRUE.equals(a.getIsAvailable())));
+        return result;
+    }
+
 }

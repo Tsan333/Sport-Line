@@ -48,4 +48,4 @@ public class SanPham {
 
     @Column(name = "TrangThai")
     private Integer trangThai;
- }
+}

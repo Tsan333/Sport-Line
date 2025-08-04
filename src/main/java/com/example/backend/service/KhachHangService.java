@@ -5,19 +5,18 @@ package com.example.backend.service;
 import com.example.backend.dto.DangKyRequest;
 import com.example.backend.dto.KhachHangReponseDTO;
 
-import com.example.backend.dto.PageReSponse;
 import com.example.backend.entity.KhachHang;
 import com.example.backend.repository.KhachHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.backend.dto.PageReSponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.sql.Date;
 import java.util.List;
-
+import java.util.Optional;
 
 
 @Service
@@ -27,19 +26,19 @@ public class KhachHangService {
     private KhachHangRepository khachHangRepository;
 
     private KhachHangReponseDTO convertDTO(KhachHang kh){
-      return   new KhachHangReponseDTO(
-              kh.getId(),
-              kh.getTenKhachHang(),
-              kh.getEmail(),
-              kh.getNgaySinh(),
-              kh.getGioiTinh(),
-              kh.getDiaChi(),
-              kh.getSoDienThoai(),
+        return   new KhachHangReponseDTO(
+                kh.getId(),
+                kh.getTenKhachHang(),
+                kh.getEmail(),
+                kh.getNgaySinh(),
+                kh.getGioiTinh(),
+                kh.getDiaChi(),
+                kh.getSoDienThoai(),
 
-              kh.getTrangThai(),
-              kh.getMaThongBao(),
-              kh       .getThoiGianThongBao()
-      );
+                kh.getTrangThai(),
+                kh.getMaThongBao(),
+                kh       .getThoiGianThongBao()
+        );
 
     }
 
@@ -83,20 +82,25 @@ public class KhachHangService {
 
     }
     // ham them
-    public KhachHangReponseDTO create(KhachHangReponseDTO dto){
+    // KhachHangService.java
+    public KhachHangReponseDTO create(KhachHangReponseDTO dto) {
+        // Kiểm tra trùng số điện thoại
+        Optional<KhachHang> existing = khachHangRepository.findBySoDienThoai(dto.getSoDienThoai());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Số điện thoại đã tồn tại!");
+        }
+
         KhachHang kh = new KhachHang();
         kh.setTenKhachHang(dto.getTenKhachHang());
         kh.setEmail(dto.getEmail());
-        kh.setNgaySinh((Date) dto.getNgaySinh());
+        kh.setNgaySinh(dto.getNgaySinh());
         kh.setGioiTinh(dto.getGioiTinh());
         kh.setDiaChi(dto.getDiaChi());
         kh.setSoDienThoai(dto.getSoDienThoai());
-
         kh.setTrangThai(dto.getTrangThai());
         kh.setMaThongBao(dto.getMaThongBao());
         kh.setThoiGianThongBao(dto.getThoiGianThongBao());
         return convertDTO(khachHangRepository.save(kh));
-
     }
 
     public Boolean deleteById(int id) {
@@ -104,26 +108,7 @@ public class KhachHangService {
             khachHangRepository.deleteById(id);
             return true;
         }
-    return      false;
-    }
-
-    public KhachHangReponseDTO update( int id,KhachHangReponseDTO dto) {
-        return khachHangRepository.findById(id)
-                .map(kh -> {
-                    kh.setTenKhachHang(dto.getTenKhachHang());
-                    kh.setEmail(dto.getEmail());
-                    kh.setNgaySinh((Date) dto.getNgaySinh());
-                    kh.setGioiTinh(dto.getGioiTinh());
-                    kh.setDiaChi(dto.getDiaChi());
-                    kh.setSoDienThoai(dto.getSoDienThoai());
-
-                    kh.setTrangThai(dto.getTrangThai());
-                    kh.setMaThongBao(dto.getMaThongBao());
-                    kh.setThoiGianThongBao(dto.getThoiGianThongBao());
-                    return convertDTO(khachHangRepository.save(kh));
-                })
-                .orElse(null);
-
+        return      false;
     }
 
     @Autowired
@@ -177,5 +162,23 @@ public class KhachHangService {
         return result.stream()
                 .map(this::convertDTO)
                 .toList();
+    }
+    public KhachHangReponseDTO update( int id,KhachHangReponseDTO dto) {
+        return khachHangRepository.findById(id)
+                .map(kh -> {
+                    kh.setTenKhachHang(dto.getTenKhachHang());
+                    kh.setEmail(dto.getEmail());
+                    kh.setNgaySinh(dto.getNgaySinh());
+                    kh.setGioiTinh(dto.getGioiTinh());
+                    kh.setDiaChi(dto.getDiaChi());
+                    kh.setSoDienThoai(dto.getSoDienThoai());
+
+                    kh.setTrangThai(dto.getTrangThai());
+                    kh.setMaThongBao(dto.getMaThongBao());
+                    kh.setThoiGianThongBao(dto.getThoiGianThongBao());
+                    return convertDTO(khachHangRepository.save(kh));
+                })
+                .orElse(null);
+
     }
 }

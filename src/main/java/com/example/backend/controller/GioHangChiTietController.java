@@ -40,6 +40,19 @@ public class GioHangChiTietController {
         gioHangChiTietService.xoaTatCaTheoKhach(idKhach);
         return ResponseEntity.noContent().build();
     }
+    @DeleteMapping("/xoa")
+    public ResponseEntity<?> xoaSanPhamKhoiGio(
+            @RequestParam Integer idKhachHang,
+            @RequestParam Integer idSanPhamChiTiet) {
+        try {
+            gioHangChiTietService.xoaSanPham(idKhachHang, idSanPhamChiTiet);
+            return ResponseEntity.ok().body("Đã xóa sản phẩm khỏi giỏ hàng thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Có lỗi xảy ra khi xóa sản phẩm");
+        }
+    }
 
     @GetMapping("/so-loai/{idKhach}")
     public ResponseEntity<Integer> soLoai(@PathVariable Integer idKhach) {
@@ -56,5 +69,6 @@ public class GioHangChiTietController {
     public ResponseEntity<Double> tongTien(@PathVariable Integer idKhachHang) {
         return ResponseEntity.ok(gioHangChiTietService.tongTien(idKhachHang));
     }
+
 
 }

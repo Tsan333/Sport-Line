@@ -6,12 +6,13 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.sql.Date;
+import java.util.Date;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name="KhachHang")
 public class KhachHang {
@@ -28,8 +29,8 @@ public class KhachHang {
     private String tenKhachHang;
 
     @Column(name = "Email")
-    @NotEmpty(message = "Email không được để trống!")
-    @Email(message = "Email không đúng định dạng!")
+//    @NotEmpty(message = "Email không được để trống!")
+//    @Email(message = "Email không đúng định dạng!")
     private String email;
 
     @Column(name = "NgaySinh")
@@ -37,12 +38,11 @@ public class KhachHang {
     private Date ngaySinh;
 
     @Column(name = "GioiTinh")
-    @NotNull(message = "Bạn chưa chọn giới tính!")
+
     private Boolean gioiTinh;
 
     @Column(name = "DiaChi")
-    @NotEmpty(message = "Địa chỉ không được để trống")
-    @Size(min = 5, max = 100, message = "Địa chỉ phải từ 5 đến 100 ký tự!")
+
     private String diaChi;
 
     @Column(name = "SoDienThoai")
@@ -54,8 +54,7 @@ public class KhachHang {
     @Column(name="matKhau")
     private String matKhau;
 
-    @Column(name = "TrangThai")
-    @NotNull(message = "Bạn chưa chọn trạng thái!")
+
     private Boolean trangThai;
 
     @Column(name = "MaThongBao")

@@ -1,4 +1,3 @@
-
 package com.example.backend.dto;
 
 
@@ -28,5 +27,4 @@ public class DonHangChiTietDTO {
         this.gia = ct.getGia();
         this.thanhTien = ct.getThanhTien();
     }
-
 }

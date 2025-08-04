@@ -36,7 +36,6 @@ public class KhachHangController {
 
         return ResponseEntity.ok(khachHangDTO);
     }
-
     @GetMapping("/khachhang/page")
     public ResponseEntity<PageReSponse<KhachHangReponseDTO>> getPage(@RequestParam int page,
                                                                      @RequestParam int size) {
@@ -44,10 +43,23 @@ public class KhachHangController {
         return ResponseEntity.ok(response);
     }
 
+    // KhachHangController.java
     @PostMapping("/khachhang/create")
-    public ResponseEntity<KhachHangReponseDTO>  create(@RequestBody KhachHangReponseDTO khachHangDTO) {
-        KhachHangReponseDTO dto = khachHangService.create(khachHangDTO);
-        return  ResponseEntity.ok(dto);
+    public ResponseEntity<?> create(@RequestBody KhachHangReponseDTO khachHangDTO) {
+        try {
+            KhachHangReponseDTO dto = khachHangService.create(khachHangDTO);
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            // Lỗi chủ động (ví dụ: số điện thoại đã tồn tại)
+            return ResponseEntity
+                    .badRequest()
+                    .body(java.util.Collections.singletonMap("message", e.getMessage()));
+        } catch (Exception e) {
+            // Bắt mọi lỗi khác (ví dụ: Query did not return a unique result)
+            return ResponseEntity
+                    .badRequest()
+                    .body(java.util.Collections.singletonMap("message", "Dữ liệu khách hàng đã tồn tại!"));
+        }
     }
 
     @DeleteMapping("/khachhang/delete/{id}")
@@ -59,7 +71,6 @@ public class KhachHangController {
     public ResponseEntity<KhachHangReponseDTO> update(@PathVariable int id, @RequestBody KhachHangReponseDTO dto) {
         return ResponseEntity.ok(khachHangService.update(id, dto));
     }
-
     @PostMapping("/dang-ky")
     public ResponseEntity<String> dangKy(@Valid @RequestBody DangKyRequest req) {
         khachHangService.dangKyKhach(req);

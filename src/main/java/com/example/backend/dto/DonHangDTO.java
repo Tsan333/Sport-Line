@@ -1,4 +1,6 @@
 
+
+
 package com.example.backend.dto;
 
 
@@ -28,6 +30,9 @@ public class DonHangDTO {
     private Integer  idkhachHang;
 
 
+    private String tenNhanVien;
+
+
     private Integer  idgiamGia;
 
 
@@ -40,7 +45,7 @@ public class DonHangDTO {
     private String loaiDonHang;
 
 
-    private Integer trangThai;
+    private Integer trangThai = 0;
 
     private String trangThaiText;
 
@@ -97,3 +102,4 @@ public class DonHangDTO {
         }
     }
 }
+

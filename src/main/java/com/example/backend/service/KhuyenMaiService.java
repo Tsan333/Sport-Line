@@ -118,11 +118,11 @@ public class KhuyenMaiService {
 
         for (SanPhamChiTiet sp : danhSachSanPham) {
             KhuyenMai km = sp.getKhuyenMai();
-            if (km != null &&
-                    km.getTrangThai() == 1 &&
+            boolean hopLe = km != null &&
                     now.isAfter(km.getNgayBatDau()) &&
-                    now.isBefore(km.getNgayKetThuc())) {
+                    now.isBefore(km.getNgayKetThuc());
 
+            if (hopLe) {
                 Float giaTri = km.getGiaTri();
                 if (giaTri != null && giaTri > 0) {
                     double giamGia = sp.getGiaBan() * giaTri / 100.0;
@@ -131,12 +131,11 @@ public class KhuyenMaiService {
                 }
             }
 
-            // Không có khuyến mãi hợp lệ
             sp.setGiaBanGiamGia(sp.getGiaBan());
         }
     }
 
-    @Scheduled(fixedRate = 6000000) // Cập nhật mỗi 60 giây
+    @Scheduled(fixedRate = 60000) // Cập nhật mỗi 60 giây
     public void updateActiveKhuyenMai() {
         updateKhuyenMaiActive();
     }
@@ -159,7 +158,7 @@ public class KhuyenMaiService {
             boolean isExpired = km.getNgayKetThuc().isBefore(now);
             boolean isActive = km.getNgayBatDau().isBefore(now) && km.getNgayKetThuc().isAfter(now);
 
-            List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findByKhuyenMai_Id(km.getId());
+            List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findByKhuyenMai_Id((km.getId()));
 
             if (isExpired) {
                 // HẾT HẠN → Gỡ khỏi sản phẩm + cập nhật trạng thái KM
