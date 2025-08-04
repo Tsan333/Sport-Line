@@ -7,6 +7,8 @@
     import com.example.backend.service.VoucherService;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.ResponseEntity;
+    import org.springframework.http.HttpStatus;
+    import java.util.Collections;
     import org.springframework.web.bind.annotation.*;
 
     import java.util.List;
@@ -90,6 +92,23 @@
             return ResponseEntity.ok(donHangService.filterByTrangThaiAndLoai(6, "online"));
         }
 
+        // Thêm endpoint tìm kiếm đơn hàng POS
+        @GetMapping("/donhang/search-pos")
+        public ResponseEntity<List<DonHangDTO>> searchDonHangPOS(
+                @RequestParam(required = false) String tenKhachHang,
+                @RequestParam(required = false) String tuNgay,
+                @RequestParam(required = false) String denNgay,
+                @RequestParam(defaultValue = "-1") int trangThai) {
+
+            try {
+                List<DonHangDTO> donHangs = donHangService.searchDonHangPOS(tenKhachHang, tuNgay, denNgay, trangThai);
+                return ResponseEntity.ok(donHangs);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Collections.emptyList());
+            }
+        }
 
 
 

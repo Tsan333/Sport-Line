@@ -119,7 +119,6 @@ public class KhuyenMaiService {
         for (SanPhamChiTiet sp : danhSachSanPham) {
             KhuyenMai km = sp.getKhuyenMai();
             boolean hopLe = km != null &&
-                    km.getTrangThai() == 1 &&
                     now.isAfter(km.getNgayBatDau()) &&
                     now.isBefore(km.getNgayKetThuc());
 
@@ -132,12 +131,11 @@ public class KhuyenMaiService {
                 }
             }
 
-            sp.setKhuyenMai(null);
             sp.setGiaBanGiamGia(sp.getGiaBan());
         }
     }
 
-    @Scheduled(fixedRate = 6000000) // Cập nhật mỗi 60 giây
+    @Scheduled(fixedRate = 60000) // Cập nhật mỗi 60 giây
     public void updateActiveKhuyenMai() {
         updateKhuyenMaiActive();
     }

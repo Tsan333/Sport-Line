@@ -10,6 +10,7 @@ import com.example.backend.entity.*;
 import com.example.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
@@ -132,6 +133,7 @@ public class SPCTService {
         return spcti.getSanPhamByDonHang(idDonHang);
     }
 
+    // Cập nhật method hiện tại trong SPCTService.java
     public List<SanPhamChiTiet> addSanPhamDuocKhuyenMai(Integer idKhuyenMai, List<Integer> listIdSanPham) {
         KhuyenMai khuyenMai = khuyenMaiRepository.findById(idKhuyenMai)
                 .orElseThrow(() -> new IllegalArgumentException("Khuyến mãi không tồn tại"));
@@ -139,10 +141,19 @@ public class SPCTService {
         List<SanPhamChiTiet> danhSachSanPham = spcti.findAllById(listIdSanPham);
 
         for (SanPhamChiTiet sp : danhSachSanPham) {
+            // Kiểm tra xem sản phẩm đã được áp dụng khuyến mãi khác chưa
+            if (sp.getKhuyenMai() != null && !sp.getKhuyenMai().getId().equals(idKhuyenMai)) {
+                throw new RuntimeException("Sản phẩm " + sp.getSanPham().getTenSanPham() +
+                        " đã được áp dụng khuyến mãi khác: " + sp.getKhuyenMai().getTenKhuyenMai());
+            }
             sp.setKhuyenMai(khuyenMai);
         }
 
         khuyenMaiService.capNhatGiaKhuyenMaiChoDanhSach(danhSachSanPham);
+
+        // Cập nhật trạng thái khuyến mãi thành 1 (đã có sản phẩm áp dụng)
+        khuyenMai.setTrangThai(1);
+        khuyenMaiRepository.save(khuyenMai);
 
         return spcti.saveAll(danhSachSanPham);
     }
@@ -210,4 +221,44 @@ public class SPCTService {
     public void delete(Integer id) {
         spcti.deleteById(id);
     }
+
+
+    // Thêm vào SPCTService.java
+    public List<SanPhamChiTiet> getAvailableProductsForPromotion(Integer khuyenMaiId) {
+        // Lấy sản phẩm chưa được áp dụng khuyến mãi nào (khuyenMai = null)
+        // HOẶC đang áp dụng khuyến mãi này (khuyenMai.id = khuyenMaiId)
+        return spcti.findByKhuyenMaiIsNullOrKhuyenMaiId(khuyenMaiId);
+    }
+
+    @Transactional
+    public void removePromotionFromProducts(Integer khuyenMaiId, List<Integer> productIds) {
+        // Bỏ khuyến mãi khỏi sản phẩm
+        for (Integer productId : productIds) {
+            SanPhamChiTiet spct = spcti.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+
+            if (spct.getKhuyenMai() != null && spct.getKhuyenMai().getId().equals(khuyenMaiId)) {
+                spct.setKhuyenMai(null);
+                spct.setGiaBanGiamGia(spct.getGiaBan()); // Reset giá về giá gốc
+                spcti.save(spct);
+            }
+        }
+
+        // Kiểm tra xem khuyến mãi còn sản phẩm nào áp dụng không
+        long count = spcti.countByKhuyenMaiId(khuyenMaiId);
+        if (count == 0) {
+            // Nếu không còn sản phẩm nào áp dụng, set trạng thái về 0
+            KhuyenMai khuyenMai = khuyenMaiRepository.findById(khuyenMaiId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi"));
+            khuyenMai.setTrangThai(0);
+            khuyenMaiRepository.save(khuyenMai);
+        }
+    }
+
+
+
+
+
+
+
 }

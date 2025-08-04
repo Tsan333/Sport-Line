@@ -12,6 +12,7 @@ import java.sql.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name="KhachHang")
 public class KhachHang {

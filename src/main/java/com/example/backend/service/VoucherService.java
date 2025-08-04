@@ -90,20 +90,26 @@ public class VoucherService {
     }
 
     // ham create voucher
-    public VoucherDTO create(VoucherDTO dto){
-        Voucher v = new Voucher();
-        v.setMaVoucher(dto.getMaVoucher());
-        v.setTenVoucher(dto.getTenVoucher());
-        v.setLoaiVoucher(dto.getLoaiVoucher());
-        v.setSoLuong(dto.getSoLuong());
-        v.setMoTa(dto.getMoTa());
-        v.setGiaTri(dto.getGiaTri());
-        v.setDonToiThieu(dto.getDonToiThieu());
-        v.setNgayBatDau(dto.getNgayBatDau());
-        v.setNgayKetThuc(dto.getNgayKetThuc());
 
-        return convertDTO(voucherRepository.save(v));
-    }
+
+        public VoucherDTO create(VoucherDTO dto) {
+
+
+            Voucher v = new Voucher();
+            v.setMaVoucher(dto.getMaVoucher());
+            v.setTenVoucher(dto.getTenVoucher());
+            v.setLoaiVoucher(dto.getLoaiVoucher());
+            v.setSoLuong(dto.getSoLuong());
+            v.setMoTa(dto.getMoTa());
+            v.setGiaTri(dto.getGiaTri());
+            v.setDonToiThieu(dto.getDonToiThieu());
+            v.setNgayBatDau(dto.getNgayBatDau());
+            v.setNgayKetThuc(dto.getNgayKetThuc());
+
+            return convertDTO(voucherRepository.save(v));
+        }
+
+
 
     // ham delete voucher
     public boolean delete(Integer id){

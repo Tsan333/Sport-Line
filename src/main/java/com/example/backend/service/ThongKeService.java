@@ -19,15 +19,20 @@ public class ThongKeService {
     @Autowired
     private DonHangChiTietRepository donHangChiTietRepository;
 
-    public Double getRevenueByMonthYear(int month, int year) {
-        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
-        LocalDateTime end = start.withDayOfMonth(start.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
-        return donHangRepository.sumRevenueBetweenDates(start, end);
-    }
+//    public Double getRevenueByMonthYear(int month, int year) {
+//        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+//        LocalDateTime end = start.withDayOfMonth(start.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
+//        return donHangRepository.sumRevenueBetweenDates(start, end);
+//    }
 
     public Double getTodayRevenue() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.withHour(23).withMinute(59).withSecond(59);
+        LocalDate today = LocalDate.now();
+        return donHangRepository.sumRevenueBetweenDates(today, today);
+    }
+
+    public Double getRevenueByMonthYear(int month, int year) {
+        LocalDate start = LocalDate.of(year, month, 1);
+        LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
         return donHangRepository.sumRevenueBetweenDates(start, end);
     }
 
@@ -36,21 +41,21 @@ public class ThongKeService {
     }
 
     public List<BestSellerProductDTO> getBestSellers(String type) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start;
+        LocalDate now = LocalDate.now();
+        LocalDate start;
 
-        switch (type.toLowerCase()) {
+        switch (type.trim().toLowerCase()) {
             case "day":
-                start = now.toLocalDate().atStartOfDay();
+                start = now;
                 break;
             case "week":
-                start = now.toLocalDate().with(DayOfWeek.MONDAY).atStartOfDay();
+                start = now.with(DayOfWeek.MONDAY);
                 break;
             case "month":
-                start = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
+                start = now.withDayOfMonth(1);
                 break;
             case "year":
-                start = now.toLocalDate().withDayOfYear(1).atStartOfDay();
+                start = now.withDayOfYear(1);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid type: " + type);
@@ -58,4 +63,5 @@ public class ThongKeService {
 
         return donHangChiTietRepository.findBestSellers(start, now);
     }
+
 }

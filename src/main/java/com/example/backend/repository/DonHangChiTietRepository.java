@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,I
     @Modifying
     @Query("DELETE FROM DonHangChiTiet d WHERE d.donHang.id = :idDonHang")
     void deleteByDonHangId(@Param("idDonHang") Integer idDonHang);
+
     Optional<DonHangChiTiet> findByDonHang_IdAndSanPhamChiTiet_Id(Integer idDonHang, Integer idSanPhamChiTiet);
 
     @Query("""
@@ -53,7 +55,7 @@ public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,I
             "FROM DonHangChiTiet ct JOIN ct.donHang dh JOIN ct.sanPhamChiTiet spct JOIN spct.sanPham sp JOIN sp.thuongHieu th " +
             "WHERE dh.trangThai = 4 AND dh.ngayMua BETWEEN :start AND :end " +
             "GROUP BY spct.id, sp.tenSanPham, th.tenThuongHieu ORDER BY SUM(ct.soLuong) DESC")
-    List<BestSellerProductDTO> findBestSellers(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<BestSellerProductDTO> findBestSellers(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }
 
 

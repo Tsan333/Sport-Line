@@ -129,4 +129,12 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
 
 
     List<SanPhamChiTiet> findByKhuyenMai_Id(Integer khuyenMaiId);
+
+
+
+    @Query("SELECT spct FROM SanPhamChiTiet spct WHERE spct.khuyenMai IS NULL OR spct.khuyenMai.id = :khuyenMaiId")
+    List<SanPhamChiTiet> findByKhuyenMaiIsNullOrKhuyenMaiId(@Param("khuyenMaiId") Integer khuyenMaiId);
+
+    long countByKhuyenMaiId(Integer khuyenMaiId);
+
 }
