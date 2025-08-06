@@ -150,30 +150,41 @@ public class DonHangChiTietService {
 //        }
 //    }
     public void updatePricesForOrder(Integer orderId) {
-        // Lấy tất cả chi tiết đơn hàng
-        List<DonHangChiTiet> chiTiets = chiTietRepository.findByDonHang_Id(orderId);
+        DonHang donHang = donHangRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
-        for (DonHangChiTiet chiTiet : chiTiets) {
-            SanPhamChiTiet spct = chiTiet.getSanPhamChiTiet();
+        // ✅ SỬA: Chỉ cập nhật giá cho đơn hàng POS (Bán hàng tại quầy) và CHƯA thanh toán
+        if (donHang.getLoaiDonHang() != null &&
+                "Bán hàng tại quầy".equals(donHang.getLoaiDonHang()) &&
+                donHang.getTrangThai() != null &&
+                donHang.getTrangThai() == 0) {
 
-            // Lấy giá mới nhất từ sản phẩm - sử dụng giaBanGiamGia thay vì giaBanSauGiam
-            double newPrice;
-            if (spct.getGiaBanGiamGia() != null && spct.getGiaBanGiamGia() < spct.getGiaBan()) {
-                newPrice = spct.getGiaBanGiamGia(); // Giá khuyến mãi
-            } else {
-                newPrice = spct.getGiaBan(); // Giá gốc
+            List<DonHangChiTiet> chiTiets = chiTietRepository.findByDonHang_Id(orderId);
+
+            for (DonHangChiTiet chiTiet : chiTiets) {
+                if (chiTiet.getSanPhamChiTiet() != null) {
+                    SanPhamChiTiet spct = chiTiet.getSanPhamChiTiet();
+
+                    // Lấy giá mới nhất từ sản phẩm - sử dụng giaBanGiamGia thay vì giaBanSauGiam
+                    double newPrice;
+                    if (spct.getGiaBanGiamGia() != null && spct.getGiaBanGiamGia() < spct.getGiaBan()) {
+                        newPrice = spct.getGiaBanGiamGia(); // Giá khuyến mãi
+                    } else {
+                        newPrice = spct.getGiaBan(); // Giá gốc
+                    }
+
+                    // Cập nhật giá và thành tiền
+                    chiTiet.setGia(newPrice);
+                    chiTiet.setThanhTien(newPrice * chiTiet.getSoLuong());
+                }
             }
 
-            // Cập nhật giá và thành tiền
-            chiTiet.setGia(newPrice);
-            chiTiet.setThanhTien(newPrice * chiTiet.getSoLuong());
+            chiTietRepository.saveAll(chiTiets);
 
-            // Lưu vào database
-            chiTietRepository.save(chiTiet);
+            // Cập nhật tổng tiền đơn hàng
+            donHangService.capNhatTongTienDonHang(orderId);
         }
-
-        // Cập nhật tổng tiền đơn hàng
-        donHangService.capNhatTongTienDonHang(orderId);
+        // ✅ Nếu đơn hàng không phải POS hoặc đã thanh toán, KHÔNG cập nhật giá
     }
 
 

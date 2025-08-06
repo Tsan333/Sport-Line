@@ -506,6 +506,9 @@ public class DonHangService {
                 "donDaGiao", daGiao
         );
     }
+    public List<DonHang> layDonTheoTrangThai(Integer trangThai) {
+        return donHangRepository.findByTrangThai(trangThai);
+    }
 
 
     public void capNhatTrangThai(Integer idDon, TrangThaiDonHang trangThaiMoi) {
@@ -527,13 +530,26 @@ public class DonHangService {
         donHangRepository.save(don);
     }
 
+    public void danhDauGiaoKhongThanhCong(Integer idDon) {
+        DonHang don = donHangRepository.findById(idDon)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        TrangThaiDonHang hienTai = TrangThaiDonHang.fromValue(don.getTrangThai());
+        if (hienTai != TrangThaiDonHang.DANG_GIAO) {
+            throw new RuntimeException("Chỉ có thể đánh dấu giao không thành công khi đơn đang giao");
+        }
+
+        don.setTrangThai(TrangThaiDonHang.GIAO_HANG_KHONG_THANH_CONG.getValue());
+        donHangRepository.save(don);
+    }
+
     private boolean isTrangThaiHopLe(TrangThaiDonHang hienTai, TrangThaiDonHang moi) {
         return switch (hienTai) {
             case CHO_XAC_NHAN -> moi == TrangThaiDonHang.XAC_NHAN || moi == TrangThaiDonHang.DA_HUY;
             case XAC_NHAN -> moi == TrangThaiDonHang.DANG_CHUAN_BI || moi == TrangThaiDonHang.DA_HUY;
             case DANG_CHUAN_BI -> moi == TrangThaiDonHang.DANG_GIAO || moi == TrangThaiDonHang.DA_HUY;
-            case DANG_GIAO -> moi == TrangThaiDonHang.DA_GIAO || moi == TrangThaiDonHang.DA_HUY;
-            case DA_GIAO -> moi == TrangThaiDonHang.TRA_HANG_HOAN_TIEN      ;
+            case DANG_GIAO -> moi == TrangThaiDonHang.DA_GIAO || moi == TrangThaiDonHang.DA_HUY || moi == TrangThaiDonHang.GIAO_HANG_KHONG_THANH_CONG;
+            case DA_GIAO -> moi == TrangThaiDonHang.TRA_HANG_HOAN_TIEN;
             default -> false;
         };
     }

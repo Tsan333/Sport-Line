@@ -91,22 +91,22 @@ public class VoucherService {
 
     // ham create voucher
 
-    public VoucherDTO create(VoucherDTO dto) {
-
-
-        Voucher v = new Voucher();
-        v.setMaVoucher(dto.getMaVoucher());
-        v.setTenVoucher(dto.getTenVoucher());
-        v.setLoaiVoucher(dto.getLoaiVoucher());
-        v.setSoLuong(dto.getSoLuong());
-        v.setMoTa(dto.getMoTa());
-        v.setGiaTri(dto.getGiaTri());
-        v.setDonToiThieu(dto.getDonToiThieu());
-        v.setNgayBatDau(dto.getNgayBatDau());
-        v.setNgayKetThuc(dto.getNgayKetThuc());
-
-        return convertDTO(voucherRepository.save(v));
-    }
+//    public VoucherDTO create(VoucherDTO dto) {
+//
+//
+//        Voucher v = new Voucher();
+//        v.setMaVoucher(dto.getMaVoucher());
+//        v.setTenVoucher(dto.getTenVoucher());
+//        v.setLoaiVoucher(dto.getLoaiVoucher());
+//        v.setSoLuong(dto.getSoLuong());
+//        v.setMoTa(dto.getMoTa());
+//        v.setGiaTri(dto.getGiaTri());
+//        v.setDonToiThieu(dto.getDonToiThieu());
+//        v.setNgayBatDau(dto.getNgayBatDau());
+//        v.setNgayKetThuc(dto.getNgayKetThuc());
+//
+//        return convertDTO(voucherRepository.save(v));
+//    }
 
 
 
@@ -125,9 +125,49 @@ public class VoucherService {
     }
 
     //ham update voucher
-    public VoucherDTO update (int id, VoucherDTO dto){
+//    public VoucherDTO update (int id, VoucherDTO dto){
+//        return voucherRepository.findById(id)
+//                .map( v  -> {
+//                    v.setMaVoucher(dto.getMaVoucher());
+//                    v.setTenVoucher(dto.getTenVoucher());
+//                    v.setLoaiVoucher(dto.getLoaiVoucher());
+//                    v.setSoLuong(dto.getSoLuong());
+//                    v.setMoTa(dto.getMoTa());
+//                    v.setGiaTri(dto.getGiaTri());
+//                    v.setDonToiThieu(dto.getDonToiThieu());
+//                    v.setNgayBatDau(dto.getNgayBatDau());
+//                    v.setNgayKetThuc(dto.getNgayKetThuc());
+//                    v.setTrangThai(dto.getTrangThai());
+//
+//                    return convertDTO(voucherRepository.save(v));
+//                })
+//                .orElse(null);
+//    }
+
+    public VoucherDTO create(VoucherDTO dto) {
+        // ✅ THÊM: Validation trước khi tạo
+        validateVoucherData(dto);
+
+        Voucher v = new Voucher();
+        v.setMaVoucher(dto.getMaVoucher());
+        v.setTenVoucher(dto.getTenVoucher());
+        v.setLoaiVoucher(dto.getLoaiVoucher());
+        v.setSoLuong(dto.getSoLuong());
+        v.setMoTa(dto.getMoTa());
+        v.setGiaTri(dto.getGiaTri());
+        v.setDonToiThieu(dto.getDonToiThieu());
+        v.setNgayBatDau(dto.getNgayBatDau());
+        v.setNgayKetThuc(dto.getNgayKetThuc());
+
+        return convertDTO(voucherRepository.save(v));
+    }
+
+    public VoucherDTO update(int id, VoucherDTO dto) {
+        // ✅ THÊM: Validation trước khi cập nhật
+        validateVoucherData(dto);
+
         return voucherRepository.findById(id)
-                .map( v  -> {
+                .map(v -> {
                     v.setMaVoucher(dto.getMaVoucher());
                     v.setTenVoucher(dto.getTenVoucher());
                     v.setLoaiVoucher(dto.getLoaiVoucher());
@@ -142,6 +182,68 @@ public class VoucherService {
                     return convertDTO(voucherRepository.save(v));
                 })
                 .orElse(null);
+    }
+
+    // ✅ THÊM: Method validation riêng
+    private void validateVoucherData(VoucherDTO dto) {
+        if (dto == null) {
+            throw new RuntimeException("Dữ liệu voucher không được null");
+        }
+
+        // Kiểm tra các trường bắt buộc
+        if (dto.getMaVoucher() == null || dto.getMaVoucher().trim().isEmpty()) {
+            throw new RuntimeException("Mã voucher không được để trống");
+        }
+
+        if (dto.getTenVoucher() == null || dto.getTenVoucher().trim().isEmpty()) {
+            throw new RuntimeException("Tên voucher không được để trống");
+        }
+
+        if (dto.getLoaiVoucher() == null || dto.getLoaiVoucher().trim().isEmpty()) {
+            throw new RuntimeException("Loại voucher không được để trống");
+        }
+
+        if (dto.getSoLuong() == null || dto.getSoLuong() <= 0) {
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
+        }
+
+        if (dto.getGiaTri() == null || dto.getGiaTri() <= 0) {
+            throw new RuntimeException("Giá trị phải lớn hơn 0");
+        }
+
+        if (dto.getDonToiThieu() == null || dto.getDonToiThieu() < 0) {
+            throw new RuntimeException("Đơn tối thiểu không được âm");
+        }
+
+        if (dto.getNgayBatDau() == null) {
+            throw new RuntimeException("Ngày bắt đầu không được để trống");
+        }
+
+        if (dto.getNgayKetThuc() == null) {
+            throw new RuntimeException("Ngày kết thúc không được để trống");
+        }
+
+        if (dto.getNgayBatDau().isAfter(dto.getNgayKetThuc())) {
+            throw new RuntimeException("Ngày bắt đầu không được sau ngày kết thúc");
+        }
+
+        // ✅ THÊM: Validation theo loại voucher
+        if ("Giảm giá số tiền".equals(dto.getLoaiVoucher())) {
+            // Nếu là giảm giá số tiền, giá trị không được lớn hơn đơn tối thiểu
+            if (dto.getGiaTri() > dto.getDonToiThieu()) {
+                throw new RuntimeException("Giá trị giảm giá không được lớn hơn đơn tối thiểu");
+            }
+        } else if ("Giảm giá %".equals(dto.getLoaiVoucher())) {
+            // Nếu là giảm giá %, giá trị phải từ 1-100
+            if (dto.getGiaTri() <= 0 || dto.getGiaTri() > 100) {
+                throw new RuntimeException("Giá trị % phải từ 1-100");
+            }
+        } else {
+            throw new RuntimeException("Loại voucher không hợp lệ");
+        }
+
+        // ✅ THÊM: Kiểm tra mã voucher trùng lặp (chỉ khi tạo mới)
+        // Nếu cần kiểm tra trùng lặp, thêm logic ở đây
     }
 
     @Scheduled(fixedRate = 60000) // Cập nhật mỗi 60 giây
