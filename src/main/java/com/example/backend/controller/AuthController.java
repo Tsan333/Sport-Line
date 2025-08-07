@@ -28,9 +28,21 @@ public class AuthController {
     private static final String GOOGLE_CLIENT_ID = "326799010600-sqfvc012vkhmkt52bbaemnq3000ps7a4.apps.googleusercontent.com";
 
     @PostMapping("/dang-nhap")
-    public ResponseEntity<AuthResponse> dangNhap(@RequestBody DangNhapRequest req) {
-        AuthResponse res = authService.dangNhap(req);
-        return ResponseEntity.ok(res);
+    public ResponseEntity<?> dangNhap(@RequestBody DangNhapRequest req) {
+        try {
+            AuthResponse res = authService.dangNhap(req);
+            return ResponseEntity.ok(res);
+        } catch (RuntimeException e) {
+            // Trả về lỗi với status 400 và message
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            // Trả về lỗi chung
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Có lỗi xảy ra, vui lòng thử lại!");
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
     }
 
     @PostMapping("/google")

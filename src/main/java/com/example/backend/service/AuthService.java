@@ -31,6 +31,7 @@ public class AuthService {
             throw new RuntimeException("Email hoặc mật khẩu không được để trống!");
         }
 
+        // Kiểm tra trong bảng KhachHang trước
         Optional<KhachHang> khOpt = khachHangRepo.findByEmail(email.trim());
         if (khOpt.isPresent()) {
             KhachHang kh = khOpt.get();
@@ -57,7 +58,13 @@ public class AuthService {
             return new AuthResponse(kh.getId(), kh.getTenKhachHang(), "KHACH", "/trang-chu");
         }
 
+        // Kiểm tra trong bảng NhanVien - hỗ trợ cả email và số điện thoại
         Optional<NhanVien> nvOpt = nhanVienRepo.findByEmail(email.trim());
+        if (!nvOpt.isPresent()) {
+            // Nếu không tìm thấy theo email, thử tìm theo số điện thoại
+            nvOpt = nhanVienRepo.findBySoDienThoai(email.trim());
+        }
+
         if (nvOpt.isPresent()) {
             NhanVien nv = nvOpt.get();
             String storedPassword = nv.getMatKhau();
@@ -80,10 +87,10 @@ public class AuthService {
                 throw new RuntimeException("Tài khoản nhân viên bị khoá!");
             }
 
-            return new AuthResponse(nv.getId(), nv.getTenNhanVien(), "NHANVIEN", "/admin/ban-hang");
+            return new AuthResponse(nv.getId(), nv.getTenNhanVien(), "NHANVIEN", "/admin-panel");
         }
 
-        throw new RuntimeException("Email không tồn tại trong hệ thống!");
+        throw new RuntimeException("Email hoặc số điện thoại không tồn tại trong hệ thống!");
     }
 
     public AuthResponse dangNhapGoogle(String email, String name, String picture) {

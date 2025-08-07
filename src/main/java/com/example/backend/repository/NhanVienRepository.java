@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface NhanVienRepository extends JpaRepository<NhanVien, Integer> {
     Optional<NhanVien> findByEmail(String email);
 
+    Optional<NhanVien> findBySoDienThoai(String soDienThoai);
+
     Page<NhanVien> findAll(Pageable pageable);
 
     @Query("SELECT nv FROM NhanVien nv WHERE " +
