@@ -31,6 +31,9 @@ public class MauSacService {
                 ? ResponseEntity.ok(found.get())
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Màu sắc với ID: " + id);
     }
+    public List<MauSac> searchByName(String name) {
+        return msi.findByTenMauSacContainingIgnoreCase(name);
+    }
 
     public ResponseEntity<?> create(MauSac mauSac) {
         Optional<MauSac> existing = msi.findByTenMauSacIgnoreCase(mauSac.getTenMauSac());

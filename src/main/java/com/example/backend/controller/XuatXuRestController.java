@@ -39,6 +39,11 @@ public class XuatXuRestController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<XuatXu>> searchKichThuoc(@RequestParam String name) {
+        List<XuatXu> results = service.searchByName(name);
+        return ResponseEntity.ok(results);
+    }
 
     @PostMapping("/add")
     public ResponseEntity<?> create(@RequestBody XuatXu xuatXu) {

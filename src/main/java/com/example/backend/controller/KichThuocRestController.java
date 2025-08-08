@@ -33,6 +33,12 @@ public class KichThuocRestController {
         return kichThuocService.getById(id);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<KichThuoc>> searchKichThuoc(@RequestParam String name) {
+        List<KichThuoc> results = kichThuocService.searchByName(name);
+        return ResponseEntity.ok(results);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> create(@RequestBody KichThuoc kichThuoc) {
         return kichThuocService.create(kichThuoc);

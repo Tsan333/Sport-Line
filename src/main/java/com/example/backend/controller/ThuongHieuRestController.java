@@ -33,6 +33,11 @@ public class ThuongHieuRestController {
     public ThuongHieu getById(@PathVariable Integer id) {
         return thuongHieuService.getById(id);
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<ThuongHieu>> searchKichThuoc(@RequestParam String name) {
+        List<ThuongHieu> results = thuongHieuService.searchByName(name);
+        return ResponseEntity.ok(results);
+    }
 
     @PostMapping("/add")
     public ResponseEntity<?> create(@RequestBody ThuongHieu thuongHieu) {

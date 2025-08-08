@@ -34,6 +34,12 @@ public class ChatLieuRestController {
                         .body("Không tìm thấy Chất liệu với ID: " + id));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ChatLieu>> searchKichThuoc(@RequestParam String name) {
+        List<ChatLieu> results = chatLieuService.searchByName(name);
+        return ResponseEntity.ok(results);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> create(@RequestBody ChatLieu chatLieu) {
         return chatLieuService.create(chatLieu);

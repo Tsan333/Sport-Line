@@ -37,6 +37,12 @@ public class DanhMucRestController {
         return danhMucService.getById(id);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<DanhMuc>> searchKichThuoc(@RequestParam String name) {
+        List<DanhMuc> results = danhMucService.searchByName(name);
+        return ResponseEntity.ok(results);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> create(@RequestBody DanhMuc danhMuc) {
         return danhMucService.create(danhMuc);

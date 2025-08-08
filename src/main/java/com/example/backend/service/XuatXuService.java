@@ -32,6 +32,10 @@ public class XuatXuService {
         return xuatXuRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy Xuất xứ với ID: " + id));
     }
+    public List<XuatXu> searchByName(String name) {
+        return xuatXuRepo.findByTenXuatXuContainingIgnoreCase(name);
+    }
+
 
     public ResponseEntity<?> create(XuatXu xuatXu) {
         Optional<XuatXu> existing = xuatXuRepo.findByTenXuatXuIgnoreCase(xuatXu.getTenXuatXu());

@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface DanhMucInterface extends JpaRepository<DanhMuc,Integer> {
     List<DanhMuc> findAllByTrangThai(int trangThai);
     Optional<DanhMuc> findByTenDanhMucIgnoreCase(String tenDanhMuc);
+
+    List<DanhMuc> findByTenDanhMucContainingIgnoreCase(String tenDanhMuc);
 }

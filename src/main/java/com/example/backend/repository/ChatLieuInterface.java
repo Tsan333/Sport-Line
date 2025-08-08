@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ChatLieuInterface extends JpaRepository<ChatLieu,Integer> {
     List<ChatLieu> findAllByTrangThai(Integer trangThai);
     Optional<ChatLieu> findByTenChatLieuIgnoreCase(String tenChatLieu);
+    List<ChatLieu> findByTenChatLieuContainingIgnoreCase(String tenChatLieu);
 }

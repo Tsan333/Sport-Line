@@ -28,7 +28,9 @@ public class ThuongHieuService {
     public ThuongHieu getById(Integer id) {
         return thi.findById(id).orElse(null);
     }
-
+    public List<ThuongHieu> searchByName(String name) {
+        return thi.findByTenThuongHieuContainingIgnoreCase(name);
+    }
     public ResponseEntity<?> create(ThuongHieu thuongHieu) {
         Optional<ThuongHieu> existing = thi.findByTenThuongHieuIgnoreCase(thuongHieu.getTenThuongHieu());
         if (existing.isPresent()) {

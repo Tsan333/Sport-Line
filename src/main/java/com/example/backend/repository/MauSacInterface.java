@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface MauSacInterface extends JpaRepository<MauSac, Integer> {
     List<MauSac> findAllByTrangThai(int trangThai);
     Optional<MauSac> findByTenMauSacIgnoreCase(String tenMauSac);
+
+    List<MauSac> findByTenMauSacContainingIgnoreCase(String tenMauSac);
 }

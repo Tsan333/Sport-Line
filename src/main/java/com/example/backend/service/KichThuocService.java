@@ -27,6 +27,10 @@ public class KichThuocService {
     public KichThuoc getById(Integer id) {
         return kti.findById(id).orElse(null);
     }
+    public List<KichThuoc> searchByName(String name) {
+        return kti.findByTenKichThuocContainingIgnoreCase(name);
+    }
+
 
     public ResponseEntity<?> create(KichThuoc kichThuoc) {
         Optional<KichThuoc> existing = kti.findByTenKichThuocIgnoreCase(kichThuoc.getTenKichThuoc());

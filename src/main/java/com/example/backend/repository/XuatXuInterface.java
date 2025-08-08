@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface XuatXuInterface extends JpaRepository<XuatXu, Integer> {
     List<XuatXu> findAllByTrangThai(int trangThai);
     Optional<XuatXu> findByTenXuatXuIgnoreCase(String tenXuatXu);
+    List<XuatXu> findByTenXuatXuContainingIgnoreCase(String tenxuatxu);
 
 }

@@ -30,6 +30,10 @@ public class DanhMucService {
         return dmi.findById(id).orElse(null);
     }
 
+    public List<DanhMuc> searchByName(String name) {
+        return dmi.findByTenDanhMucContainingIgnoreCase(name);
+    }
+
     public ResponseEntity<?> create(DanhMuc danhMuc) {
         Optional<DanhMuc> existing = dmi.findByTenDanhMucIgnoreCase(danhMuc.getTenDanhMuc());
         if (existing.isPresent()) {

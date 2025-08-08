@@ -25,6 +25,9 @@ public class ChatLieuService {
     public List<ChatLieu> getAllFull() {
         return cli.findAll();
     }
+    public List<ChatLieu> searchByName(String name) {
+        return cli.findByTenChatLieuContainingIgnoreCase(name);
+    }
 
     public List<ChatLieu> getThungRac() {
         return cli.findAllByTrangThai(0);

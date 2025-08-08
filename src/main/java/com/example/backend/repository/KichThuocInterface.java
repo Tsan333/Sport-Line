@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface KichThuocInterface extends JpaRepository<KichThuoc,Integer> {
     List<KichThuoc> findAllByTrangThai(int trangThai);
     Optional<KichThuoc> findByTenKichThuocIgnoreCase(String tenKichThuoc);
+    List<KichThuoc> findByTenKichThuocContainingIgnoreCase(String tenKichThuoc);
 }

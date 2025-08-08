@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ThuongHieuInterface extends JpaRepository<ThuongHieu, Integer> {
     List<ThuongHieu> findAllByTrangThai(int trangThai);
     Optional<ThuongHieu> findByTenThuongHieuIgnoreCase(String tenThuongHieu);
+    List<ThuongHieu> findByTenThuongHieuContainingIgnoreCase(String tenThuongHieu);
 }

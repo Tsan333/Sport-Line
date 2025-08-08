@@ -32,6 +32,11 @@ public class MauSacRestController {
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         return mauSacService.getById(id);
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<MauSac>> searchKichThuoc(@RequestParam String name) {
+        List<MauSac> results = mauSacService.searchByName(name);
+        return ResponseEntity.ok(results);
+    }
 
     @PostMapping("/add")
     public ResponseEntity<?> create(@RequestBody MauSac mauSac) {
