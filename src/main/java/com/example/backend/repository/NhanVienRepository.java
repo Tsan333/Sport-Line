@@ -19,6 +19,18 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Integer> {
 
     Page<NhanVien> findAll(Pageable pageable);
 
+    // Check email exists
+    boolean existsByEmail(String email);
+
+    // Check email exists excluding current record (for update)
+    boolean existsByEmailAndIdNot(String email, Integer id);
+
+    // Check phone exists
+    boolean existsBySoDienThoai(String soDienThoai);
+
+    // Check phone exists excluding current record (for update)
+    boolean existsBySoDienThoaiAndIdNot(String soDienThoai, Integer id);
+
     @Query("SELECT nv FROM NhanVien nv WHERE " +
             "LOWER(nv.tenNhanVien) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(nv.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

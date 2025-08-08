@@ -1,8 +1,6 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.NhanVienDTO;
-
-
 import com.example.backend.dto.PageReSponse;
 import com.example.backend.entity.NhanVien;
 import com.example.backend.repository.NhanVienRepository;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,9 +27,11 @@ public class NhanVienService {
 
     @Autowired
     private NhanVienRepository nhanVienRepository;
-    // ham convert entity sang dto
-    public NhanVienDTO convertDTO (NhanVien nv){
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
+    // ham convert entity sang dto
+    public NhanVienDTO convertDTO(NhanVien nv) {
         return new NhanVienDTO(
                 nv.getId(),
                 nv.getTenNhanVien(),
@@ -40,47 +41,63 @@ public class NhanVienService {
                 nv.getGioiTinh(),
                 nv.getDiaChi(),
                 nv.getVaiTro(),
+                nv.getMatKhau(), // Trả về mật khẩu thay vì null
                 nv.getCccd(),
                 nv.getTrangThai()
         );
-
     }
+
+    // Validation helper methods
+    private boolean isEmailExists(String email, Integer excludeId) {
+        if (excludeId != null) {
+            return nhanVienRepository.existsByEmailAndIdNot(email, excludeId);
+        }
+        return nhanVienRepository.existsByEmail(email);
+    }
+
+    private boolean isPhoneExists(String phone, Integer excludeId) {
+        if (excludeId != null) {
+            return nhanVienRepository.existsBySoDienThoaiAndIdNot(phone, excludeId);
+        }
+        return nhanVienRepository.existsBySoDienThoai(phone);
+    }
+
+    private boolean isOver18(LocalDate birthDate) {
+        if (birthDate == null) return false;
+        LocalDate now = LocalDate.now();
+        LocalDate eighteenYearsAgo = now.minusYears(18);
+        return birthDate.isBefore(eighteenYearsAgo) || birthDate.isEqual(eighteenYearsAgo);
+    }
+
     // ham lay all nhan vien
-    public List<NhanVienDTO> findall(){
+    public List<NhanVienDTO> findall() {
         return nhanVienRepository.findAll().stream()
-                .map(nhanVien -> new NhanVienDTO(
-                        nhanVien.getId(),
-                        nhanVien.getTenNhanVien(),
-                        nhanVien.getEmail(),
-                        nhanVien.getSoDienThoai(),
-                        nhanVien.getNgaySinh(),
-                        nhanVien.getGioiTinh(),
-                        nhanVien.getDiaChi(),
-                        nhanVien.getVaiTro(),
-                        nhanVien.getCccd(),
-                        nhanVien.getTrangThai()
-                ))
+                .map(this::convertDTO) // Sử dụng method convertDTO
                 .toList();
     }
+
     //ham lay danh sach theo id
-    public NhanVienDTO findById(Integer id){
+    public NhanVienDTO findById(Integer id) {
         return nhanVienRepository.findById(id)
-                .map(nhanVien -> new NhanVienDTO(
-                        nhanVien.getId(),
-                        nhanVien.getTenNhanVien(),
-                        nhanVien.getEmail(),
-                        nhanVien.getSoDienThoai(),
-                        nhanVien.getNgaySinh(),
-                        nhanVien.getGioiTinh(),
-                        nhanVien.getDiaChi(),
-                        nhanVien.getVaiTro(),
-                        nhanVien.getCccd(),
-                        nhanVien.getTrangThai()
-                ))
+                .map(this::convertDTO) // Sử dụng method convertDTO
                 .orElse(null);
     }
+
     // ham create nhanvien
-    public NhanVienDTO create(NhanVienDTO dto){
+    public NhanVienDTO create(NhanVienDTO dto) {
+        // Validation
+        if (!isOver18(dto.getNgaySinh())) {
+            throw new IllegalArgumentException("Nhân viên phải trên 18 tuổi!");
+        }
+
+        if (isEmailExists(dto.getEmail(), null)) {
+            throw new IllegalArgumentException("Email đã tồn tại!");
+        }
+
+        if (isPhoneExists(dto.getSoDienThoai(), null)) {
+            throw new IllegalArgumentException("Số điện thoại đã tồn tại!");
+        }
+
         NhanVien nv = new NhanVien();
         nv.setTenNhanVien(dto.getTenNhanVien());
         nv.setEmail(dto.getEmail());
@@ -91,11 +108,12 @@ public class NhanVienService {
         nv.setVaiTro(dto.getVaiTro());
         nv.setCccd(dto.getCccd());
         nv.setTrangThai(dto.getTrangThai());
+        nv.setMatKhau(dto.getMatKhau()); // Bỏ passwordEncoder.encode()
+
         return convertDTO(nhanVienRepository.save(nv));
     }
 
     // ham delete nhan vien
-
     public boolean delete(Integer id){
         if (nhanVienRepository.existsById(id)) {
             nhanVienRepository.deleteById(id);
@@ -105,9 +123,22 @@ public class NhanVienService {
     }
 
     //ham update nhan vien
-    public NhanVienDTO update (int id, NhanVienDTO dto){
+    public NhanVienDTO update(int id, NhanVienDTO dto) {
         return nhanVienRepository.findById(id)
-                .map( nhanVien -> {
+                .map(nhanVien -> {
+                    // Validation
+                    if (!isOver18(dto.getNgaySinh())) {
+                        throw new IllegalArgumentException("Nhân viên phải trên 18 tuổi!");
+                    }
+
+                    if (isEmailExists(dto.getEmail(), id)) {
+                        throw new IllegalArgumentException("Email đã tồn tại!");
+                    }
+
+                    if (isPhoneExists(dto.getSoDienThoai(), id)) {
+                        throw new IllegalArgumentException("Số điện thoại đã tồn tại!");
+                    }
+
                     nhanVien.setTenNhanVien(dto.getTenNhanVien());
                     nhanVien.setEmail(dto.getEmail());
                     nhanVien.setSoDienThoai(dto.getSoDienThoai());
@@ -117,10 +148,13 @@ public class NhanVienService {
                     nhanVien.setVaiTro(dto.getVaiTro());
                     nhanVien.setCccd(dto.getCccd());
                     nhanVien.setTrangThai(dto.getTrangThai());
+                    nhanVien.setMatKhau(dto.getMatKhau());
+
                     return convertDTO(nhanVienRepository.save(nhanVien));
                 })
                 .orElse(null);
     }
+
     //phan trang
     public PageReSponse<NhanVienDTO> getPaged(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -154,7 +188,7 @@ public class NhanVienService {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("DanhSachNhanVien");
 
-        // 🟨 Dòng tiêu đề giống file import
+        // �� Dòng tiêu đề giống file import
         Row header = sheet.createRow(0);
         header.createCell(0).setCellValue("Tên nhân viên");
         header.createCell(1).setCellValue("Email");
@@ -166,7 +200,7 @@ public class NhanVienService {
         header.createCell(7).setCellValue("CCCD");
         header.createCell(8).setCellValue("Trạng thái");
 
-        // 🟩 Ghi dữ liệu từng dòng
+        // �� Ghi dữ liệu từng dòng
         int rowIdx = 1;
         for (NhanVien nv : list) {
             Row row = sheet.createRow(rowIdx++);
@@ -187,7 +221,7 @@ public class NhanVienService {
                     (nv.getTrangThai() ? "Đang hoạt động" : "Tạm khóa") : "");
         }
 
-        // 📝 Ghi file ra output stream
+        // �� Ghi file ra output stream
         workbook.write(out);
         workbook.close();
     }

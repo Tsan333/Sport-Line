@@ -1,8 +1,5 @@
 package com.example.backend.controller;
 
-
-
-
 import com.example.backend.dto.NhanVienDTO;
 import com.example.backend.dto.PageReSponse;
 import com.example.backend.service.NhanVienService;
@@ -41,14 +38,22 @@ public class NhanVienController {
     }
 
     @PostMapping("/nhanvien/create")
-    public ResponseEntity<NhanVienDTO> create(@RequestBody NhanVienDTO nhanVienDTO){
-        NhanVienDTO dto = nhanVienService.create(nhanVienDTO);
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<?> create(@RequestBody NhanVienDTO nhanVienDTO){
+        try {
+            NhanVienDTO dto = nhanVienService.create(nhanVienDTO);
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/nhanvien/update/{id}")
-    public ResponseEntity<NhanVienDTO> update(@PathVariable int id, @RequestBody NhanVienDTO dto) {
-        return ResponseEntity.ok(nhanVienService.update(id,dto));
+    public ResponseEntity<?> update(@PathVariable int id, @RequestBody NhanVienDTO dto) {
+        try {
+            return ResponseEntity.ok(nhanVienService.update(id, dto));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/nhanvien/delete/{id}")
@@ -68,5 +73,4 @@ public class NhanVienController {
 
         nhanVienService.exportExcel(response.getOutputStream());
     }
-
 }

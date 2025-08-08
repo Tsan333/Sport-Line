@@ -47,7 +47,7 @@ public class AuthService {
                 }
             } else {
                 if (!storedPassword.equals(matKhau)) {
-                    throw new RuntimeException("Mật khẩu không đúng (dữ liệu cũ)!");
+                    throw new RuntimeException("Mật khẩu không đúng!");
                 }
             }
 
@@ -79,7 +79,7 @@ public class AuthService {
                 }
             } else {
                 if (!storedPassword.equals(matKhau)) {
-                    throw new RuntimeException("Sai mật khẩu nhân viên (dữ liệu cũ)!");
+                    throw new RuntimeException("Sai mật khẩu nhân viên !");
                 }
             }
 
