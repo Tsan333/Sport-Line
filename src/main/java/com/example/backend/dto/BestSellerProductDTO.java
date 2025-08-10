@@ -10,8 +10,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class BestSellerProductDTO {
-    private Integer productDetailId;
+    private Integer productId;        // Thay vì productDetailId
     private String productName;
     private String brandName;
     private Long totalSold;
+    private String images;
 }

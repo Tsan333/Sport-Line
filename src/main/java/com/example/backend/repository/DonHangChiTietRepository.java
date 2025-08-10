@@ -48,11 +48,62 @@ public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,I
     @Query("SELECT SUM(ct.soLuong) FROM DonHangChiTiet ct JOIN ct.donHang dh WHERE dh.trangThai = 4")
     Long sumTotalProductsSold();
 
-    @Query("SELECT new com.example.backend.dto.BestSellerProductDTO(spct.id, sp.tenSanPham, th.tenThuongHieu, SUM(ct.soLuong)) " +
-            "FROM DonHangChiTiet ct JOIN ct.donHang dh JOIN ct.sanPhamChiTiet spct JOIN spct.sanPham sp JOIN sp.thuongHieu th " +
-            "WHERE dh.trangThai = 4 AND dh.ngayMua BETWEEN :start AND :end " +
-            "GROUP BY spct.id, sp.tenSanPham, th.tenThuongHieu ORDER BY SUM(ct.soLuong) DESC")
-    List<BestSellerProductDTO> findBestSellers(@Param("start") LocalDate start, @Param("end") LocalDate end);
+//    @Query("SELECT new com.example.backend.dto.BestSellerProductDTO(spct.id, sp.tenSanPham, th.tenThuongHieu, SUM(ct.soLuong)) " +
+//            "FROM DonHangChiTiet ct JOIN ct.donHang dh JOIN ct.sanPhamChiTiet spct JOIN spct.sanPham sp JOIN sp.thuongHieu th " +
+//            "WHERE dh.trangThai = 4 AND dh.ngayMua BETWEEN :start AND :end " +
+//            "GROUP BY spct.id, sp.tenSanPham, th.tenThuongHieu ORDER BY SUM(ct.soLuong) DESC")
+//    List<BestSellerProductDTO> findBestSellers(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+
+    // Query số sản phẩm đã bán
+    @Query("""
+    SELECT COALESCE(SUM(dhct.soLuong), 0)
+    FROM DonHangChiTiet dhct
+    JOIN dhct.donHang dh
+    WHERE (
+        (LOWER(dh.loaiDonHang) LIKE '%online%' AND dh.trangThai = 4) OR
+        (LOWER(dh.loaiDonHang) LIKE '%bán hàng%' OR LOWER(dh.loaiDonHang) LIKE '%quầy%') AND dh.trangThai = 1
+    ) AND dh.ngayMua BETWEEN :start AND :end
+""")
+    Long sumProductsAllChannels(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    // Tổng SP bán ra theo kênh
+    @Query("""
+ SELECT COALESCE(SUM(ct.soLuong), 0)
+ FROM DonHangChiTiet ct
+ JOIN ct.donHang dh
+ WHERE LOWER(dh.loaiDonHang) = LOWER(:loai)
+   AND dh.trangThai = :status
+   AND dh.ngayMua BETWEEN :start AND :end
+""")
+    Long sumProductsByChannel(@Param("loai") String loai, @Param("status") int status,
+                              @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    // Best seller theo kênh
+    @Query("""
+    SELECT new com.example.backend.dto.BestSellerProductDTO(
+        sp.id, 
+        sp.tenSanPham, 
+        th.tenThuongHieu, 
+        SUM(ct.soLuong),
+        sp.imanges  
+    )
+    FROM DonHangChiTiet ct
+    JOIN ct.donHang dh
+    JOIN ct.sanPhamChiTiet spct
+    JOIN spct.sanPham sp
+    JOIN sp.thuongHieu th
+    WHERE (
+        (LOWER(dh.loaiDonHang) LIKE '%online%' AND dh.trangThai = 4) OR
+        (LOWER(dh.loaiDonHang) LIKE '%bán hàng%' OR LOWER(dh.loaiDonHang) LIKE '%quầy%') AND dh.trangThai = 1
+    ) AND dh.ngayMua BETWEEN :start AND :end
+    GROUP BY sp.id, sp.tenSanPham, th.tenThuongHieu, sp.imanges  
+    ORDER BY SUM(ct.soLuong) DESC
+""")
+    List<BestSellerProductDTO> findBestSellersAllChannels(@Param("start") LocalDate start,
+                                                          @Param("end") LocalDate end);
+
+
 }
 
 

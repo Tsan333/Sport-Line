@@ -36,6 +36,59 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
     // Đếm đơn theo trạng thái
     List<DonHang> findAllByGiamGia_Id(Integer idVoucher);
 
-    @Query("SELECT COALESCE(SUM(dh.tongTien), 0) FROM DonHang dh WHERE dh.trangThai = 4 AND dh.ngayMua BETWEEN :start AND :end")
-    Double sumRevenueBetweenDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    // Query doanh thu tổng
+    @Query("""
+    SELECT COALESCE(SUM(dh.tongTien), 0)
+    FROM DonHang dh
+    WHERE (
+        (LOWER(dh.loaiDonHang) LIKE '%online%' AND dh.trangThai = 4) OR
+        (LOWER(dh.loaiDonHang) LIKE '%bán hàng%' OR LOWER(dh.loaiDonHang) LIKE '%quầy%') AND dh.trangThai = 1
+    ) AND dh.ngayMua BETWEEN :start AND :end
+""")
+    Double sumRevenueAllChannels(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    // Query số đơn hoàn thành
+    @Query("""
+    SELECT COUNT(dh)
+    FROM DonHang dh
+    WHERE (
+        (LOWER(dh.loaiDonHang) LIKE '%online%' AND dh.trangThai = 4) OR
+        (LOWER(dh.loaiDonHang) LIKE '%bán hàng%' OR LOWER(dh.loaiDonHang) LIKE '%quầy%') AND dh.trangThai = 1
+    ) AND dh.ngayMua BETWEEN :start AND :end
+""")
+
+    Long countCompletedOrdersAllChannels(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    // Theo kênh (truyền đúng loai + status)
+    @Query("""
+ SELECT COALESCE(SUM(dh.tongTien), 0)
+ FROM DonHang dh
+ WHERE LOWER(dh.loaiDonHang) = LOWER(:loai)
+   AND dh.trangThai = :status
+   AND dh.ngayMua BETWEEN :start AND :end
+""")
+    Double sumRevenueByChannel(@Param("loai") String loai, @Param("status") int status,
+                               @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query("""
+ SELECT COUNT(dh.id)
+ FROM DonHang dh
+ WHERE LOWER(dh.loaiDonHang) = LOWER(:loai)
+   AND dh.trangThai = :status
+   AND dh.ngayMua BETWEEN :start AND :end
+""")
+    Integer countCompletedOrdersByChannel(@Param("loai") String loai, @Param("status") int status,
+                                          @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+
+    @Query("""
+    SELECT COUNT(dh)
+    FROM DonHang dh
+    WHERE (
+        (LOWER(dh.loaiDonHang) LIKE '%online%' AND dh.trangThai = 4) OR
+        (LOWER(dh.loaiDonHang) LIKE '%bán hàng%' OR LOWER(dh.loaiDonHang) LIKE '%quầy%') AND dh.trangThai = 1
+    ) AND dh.ngayMua = :date
+""")
+    Long countOrdersByDate(@Param("date") LocalDate date);
+
 }
