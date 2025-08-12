@@ -1,6 +1,6 @@
 package com.example.backend.service;
 
-
+import com.example.backend.dto.GioHangChiTietResponse;
 import com.example.backend.dto.ThemGioHangDTO;
 import com.example.backend.entity.GioHangChiTiet;
 import com.example.backend.entity.KhachHang;
@@ -24,7 +24,6 @@ public class GioHangChiTietService {
 
     @Autowired
     private KhachHangRepository khachRepo;
-
 
     public GioHangChiTiet themVaoGio(ThemGioHangDTO req) {
         SanPhamChiTiet spct = spctRepo.findById(req.getIdSanPhamChiTiet())
@@ -50,10 +49,17 @@ public class GioHangChiTietService {
         return repo.save(moi);
     }
 
-    // 2. Lấy danh sách giỏ hàng theo khách
+    // ← Method mới để lấy giỏ hàng với thông tin đầy đủ
+    public List<GioHangChiTietResponse> getDanhSachTheoKhachWithDetails(Integer idKhachHang) {
+        return repo.getDanhSachTheoKhachWithDetails(idKhachHang);
+    }
+
+    // 2. Lấy danh sách giỏ hàng theo khách (giữ nguyên để tương thích)
     public List<GioHangChiTiet> getDanhSachTheoKhach(Integer idKhachHang) {
         return repo.findByKhachHangId(idKhachHang);
     }
+
+    // ... existing code ...
     // 3. Cập nhật số lượng
     public GioHangChiTiet capNhatSoLuong(Integer id, int soLuongMoi) {
         GioHangChiTiet chiTiet = repo.findById(id)
@@ -61,11 +67,13 @@ public class GioHangChiTietService {
         chiTiet.setSoLuong(soLuongMoi);
         return repo.save(chiTiet);
     }
+
     // 4. Xóa toàn bộ sản phẩm trong giỏ của 1 khách
     public void xoaTatCaTheoKhach(Integer idKhach) {
         List<GioHangChiTiet> danhSach = repo.findByKhachHangId(idKhach);
         repo.deleteAll(danhSach);
     }
+
     // 5. Đếm số loại sản phẩm
     public int soLoaiSanPham(Integer idKhach) {
         return repo.findByKhachHangId(idKhach).size();

@@ -19,7 +19,6 @@ public class VoucherController {
     @GetMapping("/voucher")
     public ResponseEntity<List<VoucherDTO>> getall(){
         return ResponseEntity.ok(voucherService.getall());
-
     }
 
     //hiển thị những voucher đủ điều kiện áp dụng cho đơn hàng

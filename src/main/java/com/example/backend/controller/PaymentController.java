@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/payment")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -20,7 +22,7 @@ public class PaymentController {
     }
 
     @GetMapping("/vnpay-return")
-    public String handleVNPayReturn(HttpServletRequest request) {
+    public Map<String, Object> handleVNPayReturn(HttpServletRequest request) {
         return paymentService.processReturn(request);
     }
 }

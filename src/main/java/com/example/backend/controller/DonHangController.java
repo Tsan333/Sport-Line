@@ -264,19 +264,36 @@ public class DonHangController {
         }
     }
 
+
+     // Áp dụng voucher cho đơn hàng client online
+
     @PostMapping("/donhang/{idDonHang}/apply-voucher/{idVoucher}")
-    public ResponseEntity<?> applyVoucherToDonHang(
+    public ResponseEntity<?> applyVoucherToClientOrder(
             @PathVariable Integer idDonHang,
             @PathVariable Integer idVoucher
     ) {
-        DonHang dh = donHangRepository.findById(idDonHang)
-                .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại"));
-
         try {
-            voucherService.updateVoucherForDonHang(dh,idVoucher);
-            donHangRepository.save(dh);
+            // Chỉ áp dụng voucher, KHÔNG trừ số lượng
+            DonHangDTO updated = donHangService.applyVoucherForClientOrder(idDonHang, idVoucher);
+            if (updated != null) {
+                return ResponseEntity.ok().body(updated);
+            } else {
+                return ResponseEntity.badRequest().body("Không tìm thấy đơn hàng");
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
-            return ResponseEntity.ok(dh);
+    // API mới để trừ số lượng voucher khi thanh toán thành công
+    @PostMapping("/donhang/{idDonHang}/confirm-payment")
+    public ResponseEntity<?> confirmPaymentAndDeductVoucher(
+            @PathVariable Integer idDonHang
+    ) {
+        try {
+            // Trừ số lượng voucher và cập nhật trạng thái đơn hàng
+            DonHangDTO updated = donHangService.confirmPaymentAndDeductVoucher(idDonHang);
+            return ResponseEntity.ok().body(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

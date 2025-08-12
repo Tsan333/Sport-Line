@@ -28,6 +28,11 @@ public class SanPhamRestController {
         return sanPhamService.getAllActive();
     }
 
+    @GetMapping("/getAllOnline")
+    public List<SanPham> getAllOnline() {
+        return sanPhamService.getAllActiveProducts();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         try {

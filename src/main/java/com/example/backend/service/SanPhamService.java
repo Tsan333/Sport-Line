@@ -22,28 +22,16 @@ public class SanPhamService {
     public List<SanPham> getAllActive() {
         return sanPhamRepo.findAll();
     }
+    public List<SanPham> getAllActiveProducts() {
+        return sanPhamRepo.findAllByTrangThai(1);
+    }
+
 
     public SanPham getById(Integer id) {
         return sanPhamRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
     }
-//    public List<SanPham> getSanPhamById(Integer id) {
-//        return sanPhamRepo.findByDanhMuc_Id(id);
-//    }
-//    public List<SanPham> getThuongHieuById(Integer id) {
-//        return sanPhamRepo.findByThuongHieu_Id(id);
-//    }
-//    public List<SanPham> getChatLieuById(Integer id) {
-//        return sanPhamRepo.findByChatLieu_Id(id);
-//    }
-//    public List<SanPham> getXuatXuById(Integer id) {
-//        return sanPhamRepo.findByXuatXu_Id(id);
-//    }
 
-
-//    public List<SanPham> filterSanPham(Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu ,Integer trangThai) {
-//        return sanPhamRepo.filterSanPham(idDanhMuc, idThuongHieu, idChatLieu, idXuatXu , trangThai);
-//    }
 
     public Page<SanPham> filterSanPhamPage(
             Integer idDanhMuc, Integer idThuongHieu, Integer idChatLieu, Integer idXuatXu,

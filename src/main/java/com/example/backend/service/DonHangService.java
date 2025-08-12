@@ -620,6 +620,71 @@ public class DonHangService {
         }
     }
 
+    @Transactional
+    public DonHangDTO applyVoucherForClientOrder(Integer idDonHang, Integer idVoucher) {
+        Optional<DonHang> optional = donHangRepository.findById(idDonHang);
+        if (optional.isPresent()) {
+            DonHang donHang = optional.get();
+
+            if (idVoucher != null) {
+                Voucher voucher = voucherRepository.findById(idVoucher).orElse(null);
+                if (voucher == null) {
+                    throw new RuntimeException("Không tìm thấy voucher");
+                }
+
+                // Kiểm tra điều kiện áp dụng voucher
+                voucherService.kiemTraDieuKienVoucher(donHang, idVoucher);
+
+                // Kiểm tra xem đơn hàng đã có voucher chưa
+                Voucher oldVoucher = donHang.getGiamGia();
+                if (oldVoucher != null) {
+                    // Hoàn lại voucher cũ (nếu có)
+                    oldVoucher.setSoLuong(oldVoucher.getSoLuong() + 1);
+                    voucherRepository.save(oldVoucher);
+                }
+
+                // Áp dụng voucher mới (KHÔNG trừ số lượng)
+                donHang.setGiamGia(voucher);
+            } else {
+                // Xóa voucher cũ (nếu có)
+                Voucher oldVoucher = donHang.getGiamGia();
+                if (oldVoucher != null) {
+                    oldVoucher.setSoLuong(oldVoucher.getSoLuong() + 1);
+                    voucherRepository.save(oldVoucher);
+                }
+                donHang.setGiamGia(null);
+            }
+
+            // Cập nhật tổng tiền đơn hàng
+            capNhatTongTienDonHang(idDonHang);
+
+            return convertToDTO(donHangRepository.save(donHang));
+        }
+        return null;
+    }
+
+    // Thêm method mới để trừ số lượng khi thanh toán thành công
+    @Transactional
+    public DonHangDTO confirmPaymentAndDeductVoucher(Integer idDonHang) {
+        Optional<DonHang> optional = donHangRepository.findById(idDonHang);
+        if (optional.isPresent()) {
+            DonHang donHang = optional.get();
+
+            // Chỉ trừ số lượng voucher khi thanh toán thành công
+            Voucher voucher = donHang.getGiamGia();
+            if (voucher != null) {
+                voucher.setSoLuong(voucher.getSoLuong() - 1);
+                voucherRepository.save(voucher);
+            }
+
+            // Cập nhật trạng thái đơn hàng thành "Đã thanh toán"
+            donHang.setTrangThai(1); // hoặc trạng thái phù hợp
+
+            return convertToDTO(donHangRepository.save(donHang));
+        }
+        return null;
+    }
+
 
 
 

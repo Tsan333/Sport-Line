@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-
+import com.example.backend.dto.GioHangChiTietResponse;
 import com.example.backend.dto.ThemGioHangDTO;
 import com.example.backend.entity.GioHangChiTiet;
 import com.example.backend.service.GioHangChiTietService;
@@ -17,18 +17,19 @@ public class GioHangChiTietController {
     @Autowired
     private GioHangChiTietService gioHangChiTietService;
 
-
-
     // Thêm sản phẩm vào giỏ hàng
     @PostMapping("/them")
     public ResponseEntity<GioHangChiTiet> themVaoGio(@RequestBody ThemGioHangDTO req) {
         return ResponseEntity.ok(gioHangChiTietService.themVaoGio(req));
     }
+
+    // ← Sửa method này để trả về thông tin đầy đủ
     @GetMapping("/{idKhachHang}")
-    public ResponseEntity<List<GioHangChiTiet>> layDanhSachTheoKhach(@PathVariable Integer idKhachHang) {
-        return ResponseEntity.ok(gioHangChiTietService.getDanhSachTheoKhach(idKhachHang));
+    public ResponseEntity<List<GioHangChiTietResponse>> layDanhSachTheoKhach(@PathVariable Integer idKhachHang) {
+        return ResponseEntity.ok(gioHangChiTietService.getDanhSachTheoKhachWithDetails(idKhachHang));
     }
 
+    // ... existing code ...
     @PutMapping("/cap-nhat")
     public ResponseEntity<GioHangChiTiet> capNhatSoLuong(@RequestParam Integer id, @RequestParam int soLuongMoi) {
         GioHangChiTiet capNhat = gioHangChiTietService.capNhatSoLuong(id, soLuongMoi);
@@ -40,6 +41,7 @@ public class GioHangChiTietController {
         gioHangChiTietService.xoaTatCaTheoKhach(idKhach);
         return ResponseEntity.noContent().build();
     }
+
     @DeleteMapping("/xoa")
     public ResponseEntity<?> xoaSanPhamKhoiGio(
             @RequestParam Integer idKhachHang,
@@ -59,16 +61,12 @@ public class GioHangChiTietController {
         int count = gioHangChiTietService.soLoaiSanPham(idKhach);
         return ResponseEntity.ok(count);
     }
-
     @GetMapping("/tong-so-luong/{idKhachHang}")
     public ResponseEntity<Integer> tongSoLuong(@PathVariable Integer idKhachHang) {
         return ResponseEntity.ok(gioHangChiTietService.tongSoLuong(idKhachHang));
     }
-
     @GetMapping("/tong-tien/{idKhachHang}")
     public ResponseEntity<Double> tongTien(@PathVariable Integer idKhachHang) {
         return ResponseEntity.ok(gioHangChiTietService.tongTien(idKhachHang));
     }
-
-
 }

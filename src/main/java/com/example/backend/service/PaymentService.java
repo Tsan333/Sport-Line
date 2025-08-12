@@ -45,16 +45,26 @@ public class PaymentService {
         return vnpayConfig.getPayUrl() + "?" + query + "&vnp_SecureHash=" + secureHash;
     }
 
-    public String processReturn(HttpServletRequest request) {
+    public Map<String, Object> processReturn(HttpServletRequest request) {
         String vnp_ResponseCode = request.getParameter("vnp_ResponseCode");
         String vnp_TxnRef = request.getParameter("vnp_TxnRef");
         String amount = request.getParameter("vnp_Amount");
 
+        Map<String, Object> response = new HashMap<>();
+
         if ("00".equals(vnp_ResponseCode)) {
             sendSuccessEmail(vnp_TxnRef, amount);
-            return "Thanh toán thành công. Mã giao dịch: " + vnp_TxnRef;
+            response.put("success", true);
+            response.put("message", "Thanh toán thành công. Mã giao dịch: " + vnp_TxnRef);
+            response.put("txnRef", vnp_TxnRef);
+            response.put("amount", amount);
+        } else {
+            response.put("success", false);
+            response.put("message", "Thanh toán thất bại. Mã: " + vnp_ResponseCode);
+            response.put("responseCode", vnp_ResponseCode);
         }
-        return "Thanh toán thất bại. Mã: " + vnp_ResponseCode;
+
+        return response;
     }
 
     private void sendSuccessEmail(String txnRef, String amount) {
