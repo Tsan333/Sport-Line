@@ -97,4 +97,10 @@ public class GioHangChiTietService {
             throw new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng");
         }
     }
+    public void xoaSanPhamTheoId(Integer id) {
+        GioHangChiTiet chiTiet = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng"));
+
+        repo.delete(chiTiet);
+    }
 }

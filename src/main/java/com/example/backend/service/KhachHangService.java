@@ -117,22 +117,87 @@ public class KhachHangService {
 
 
     public void dangKyKhach(DangKyRequest req) {
+        // Validate mật khẩu xác nhận
+        if (req.getMatKhau() == null || req.getMatKhau().trim().isEmpty()) {
+            throw new RuntimeException("Mật khẩu không được để trống!");
+        }
+
+        if (req.getConfirmPassword() == null || req.getConfirmPassword().trim().isEmpty()) {
+            throw new RuntimeException("Xác nhận mật khẩu không được để trống!");
+        }
+
         if (!req.getMatKhau().equals(req.getConfirmPassword())) {
             throw new RuntimeException("Mật khẩu xác nhận không khớp!");
         }
 
+        // Validate độ dài mật khẩu
+        if (req.getMatKhau().length() < 6) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 6 ký tự!");
+        }
+
+        if (req.getMatKhau().length() > 20) {
+            throw new RuntimeException("Mật khẩu không được quá 20 ký tự!");
+        }
+
+        // Validate email
+        if (req.getEmail() == null || req.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("Email không được để trống!");
+        }
+
+        if (!req.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new RuntimeException("Email không hợp lệ!");
+        }
+
+        if (req.getEmail().length() > 100) {
+            throw new RuntimeException("Email không được quá 100 ký tự!");
+        }
+
+        // Validate họ tên
+        if (req.getTenKhachHang() == null || req.getTenKhachHang().trim().isEmpty()) {
+            throw new RuntimeException("Họ tên không được để trống!");
+        }
+
+        if (req.getTenKhachHang().length() < 2) {
+            throw new RuntimeException("Họ tên phải có ít nhất 2 ký tự!");
+        }
+
+        if (req.getTenKhachHang().length() > 100) {
+            throw new RuntimeException("Họ tên không được quá 100 ký tự!");
+        }
+
+        // Validate số điện thoại
+        if (req.getSoDienThoai() == null || req.getSoDienThoai().trim().isEmpty()) {
+            throw new RuntimeException("Số điện thoại không được để trống!");
+        }
+
+        if (!req.getSoDienThoai().matches("^[0-9]{10,11}$")) {
+            throw new RuntimeException("Số điện thoại phải có 10-11 chữ số!");
+        }
+
+        // Validate giới tính
+        if (req.getGioiTinh() == null) {
+            throw new RuntimeException("Giới tính không được để trống!");
+        }
+
+        // Validate địa chỉ
+        if (req.getDiaChi() != null && req.getDiaChi().length() > 300) {
+            throw new RuntimeException("Địa chỉ không được quá 300 ký tự!");
+        }
+
+        // Kiểm tra email đã tồn tại
         if (khachHangRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email đã được sử dụng!");
         }
 
+        // Tạo đối tượng KhachHang
         KhachHang kh = new KhachHang();
-        kh.setEmail(req.getEmail());
+        kh.setEmail(req.getEmail().trim());
         kh.setMatKhau(encoder.encode(req.getMatKhau()));
-        kh.setTenKhachHang(req.getTenKhachHang());
-        kh.setSoDienThoai(req.getSoDienThoai());
+        kh.setTenKhachHang(req.getTenKhachHang().trim());
+        kh.setSoDienThoai(req.getSoDienThoai().trim());
         kh.setTrangThai(true);
-        kh.setGioiTinh(true);
-        kh.setDiaChi(req.getDiaChi());
+        kh.setGioiTinh(req.getGioiTinh());
+        kh.setDiaChi(req.getDiaChi() != null ? req.getDiaChi().trim() : "");
 
 
         khachHangRepository.save(kh);

@@ -17,9 +17,28 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
     @Query("SELECT d FROM DonHang d WHERE (:trangThai IS NULL OR d.trangThai = :trangThai) AND (:loai IS NULL OR LOWER(d.loaiDonHang) LIKE LOWER(CONCAT('%', :loai, '%')))")
     List<DonHang> findByTrangThaiAndLoaiDonHang(@Param("trangThai") Integer trangThai, @Param("loai") String loaiDonHang);
 
+    @Query("SELECT d FROM DonHang d WHERE (:trangThai IS NULL OR d.trangThai = :trangThai) AND (:loai IS NULL OR LOWER(d.loaiDonHang) LIKE LOWER(CONCAT('%', :loai, '%'))) AND (:idKhachHang IS NULL OR d.khachHang.id = :idKhachHang)")
+    List<DonHang> findByTrangThaiAndLoaiDonHangAndKhachHang(@Param("trangThai") Integer trangThai, @Param("loai") String loaiDonHang, @Param("idKhachHang") Integer idKhachHang);
     List<DonHang> findByKhachHangIdOrderByNgayTaoDesc(Integer idKhachHang);
 
-    // Dùng trong admin lọc đơn theo trạng thái
+    @Query("SELECT DISTINCT d FROM DonHang d " +
+            "LEFT JOIN FETCH d.donHangChiTiets ct " +
+            "LEFT JOIN FETCH ct.sanPhamChiTiet sp " +
+            "LEFT JOIN FETCH d.khachHang kh " +
+            "WHERE d.khachHang.id = :idKhachHang " +
+            "AND d.loaiDonHang = 'Online' " +
+            "ORDER BY d.ngayTao DESC")
+    List<DonHang> findByKhachHangIdAndLoaiDonHangOnlineWithChiTiet(@Param("idKhachHang") Integer idKhachHang);
+
+    // ✅ THÊM: Query mới để lấy chi tiết đơn hàng với thông tin đầy đủ
+    @Query("SELECT DISTINCT d FROM DonHang d " +
+            "LEFT JOIN FETCH d.donHangChiTiets ct " +
+            "LEFT JOIN FETCH ct.sanPhamChiTiet sp " +
+            "LEFT JOIN FETCH d.khachHang kh " +
+            "LEFT JOIN FETCH d.giamGia v " +
+            "WHERE d.id = :id")
+    DonHang findWithChiTietFull(@Param("id") Integer id);
+
     List<DonHang> findByTrangThai(Integer trangThai);
 
     // Tổng doanh thu
@@ -32,6 +51,9 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
     @EntityGraph(attributePaths = {"donHangChiTiets"})
     @Query("SELECT d FROM DonHang d WHERE d.id = :id")
     DonHang findWithChiTiet(@Param("id") Integer id);
+
+
+
 
     // Đếm đơn theo trạng thái
     List<DonHang> findAllByGiamGia_Id(Integer idVoucher);

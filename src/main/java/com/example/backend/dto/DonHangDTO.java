@@ -49,6 +49,9 @@ public class DonHangDTO {
 
     private String trangThaiText;
 
+    private Integer trangThaiTruocKhiHuy;
+
+    private String trangThaiTruocKhiHuyText;
 
     private double tongTien;
 
@@ -94,6 +97,18 @@ public class DonHangDTO {
         this.emailGiaoHang = dh.getEmailGiaoHang();
         this.tenNguoiNhan = dh.getTenNguoiNhan();
 
+        this.trangThai = dh.getTrangThai();
+        this.trangThaiText = TrangThaiDonHang.fromValue(dh.getTrangThai()).name();
+
+        // ✅ THÊM: Lưu trạng thái trước khi hủy
+        if (dh.getTrangThai() == 5) { // 5 = DA_HUY
+            this.trangThaiTruocKhiHuy = dh.getTrangThaiTruocKhiHuy();
+            if (this.trangThaiTruocKhiHuy != null) {
+                this.trangThaiTruocKhiHuyText = TrangThaiDonHang.fromValue(this.trangThaiTruocKhiHuy).name();
+            }
+        }
+
+
 
         if (dh.getDonHangChiTiets() != null) {
             this.donHangChiTiets = dh.getDonHangChiTiets().stream()
@@ -102,4 +117,3 @@ public class DonHangDTO {
         }
     }
 }
-

@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -72,9 +74,30 @@ public class KhachHangController {
         return ResponseEntity.ok(khachHangService.update(id, dto));
     }
     @PostMapping("/dang-ky")
-    public ResponseEntity<String> dangKy(@Valid @RequestBody DangKyRequest req) {
-        khachHangService.dangKyKhach(req);
-        return ResponseEntity.ok("Đăng ký khách hàng thành công!");
+    public ResponseEntity<Map<String, Object>> dangKy(@Valid @RequestBody DangKyRequest req) {
+        try {
+            khachHangService.dangKyKhach(req);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Đăng ký khách hàng thành công!");
+
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+
+            return ResponseEntity.badRequest().body(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Lỗi hệ thống: " + e.getMessage());
+
+            return ResponseEntity.internalServerError().body(response);
+        }
     }
 
     @GetMapping("/khachhang/search")

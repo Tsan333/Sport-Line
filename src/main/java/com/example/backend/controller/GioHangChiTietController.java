@@ -55,6 +55,18 @@ public class GioHangChiTietController {
             return ResponseEntity.internalServerError().body("Có lỗi xảy ra khi xóa sản phẩm");
         }
     }
+    // ✅ Mới: Xóa theo ID của giỏ hàng chi tiết
+    @DeleteMapping("/xoa/{id}")
+    public ResponseEntity<?> xoaSanPhamKhoiGio(@PathVariable Integer id) {
+        try {
+            gioHangChiTietService.xoaSanPhamTheoId(id);
+            return ResponseEntity.ok().body("Đã xóa sản phẩm khỏi giỏ hàng thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Có lỗi xảy ra khi xóa sản phẩm");
+        }
+    }
 
     @GetMapping("/so-loai/{idKhach}")
     public ResponseEntity<Integer> soLoai(@PathVariable Integer idKhach) {

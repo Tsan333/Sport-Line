@@ -42,6 +42,9 @@ public class DonHang {
     @Column(name="TrangThai")
     private Integer trangThai;
 
+    @Column(name="TrangThaiTruocKhiHuy")
+    private Integer trangThaiTruocKhiHuy;
+
     @Column(name="TongTien")
     private Double tongTien;
 

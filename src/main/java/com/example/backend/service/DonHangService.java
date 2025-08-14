@@ -201,6 +201,12 @@ public class DonHangService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    public List<DonHangDTO> filterByTrangThaiAndLoaiAndKhachHang(Integer trangThai, String loaiDonHang, Integer idKhachHang) {
+        return donHangRepository.findByTrangThaiAndLoaiDonHangAndKhachHang(trangThai, loaiDonHang, idKhachHang)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 
 
     public DonHangDTO xacNhanDonHang(
@@ -429,6 +435,10 @@ public class DonHangService {
             throw new RuntimeException("Không thể hủy đơn ở trạng thái: "
                     + TrangThaiDonHang.fromValue(trangThaiCu).getDisplayName());
         }
+
+        // ✅ THÊM: Lưu trạng thái trước khi hủy
+        don.setTrangThaiTruocKhiHuy(trangThaiCu);
+
         //  Cập nhật trạng thái đơn
         don.setTrangThai(TrangThaiDonHang.DA_HUY.getValue());
 
@@ -474,7 +484,22 @@ public class DonHangService {
     }
 
     public List<DonHang> layDonTheoKhach(Integer idKhach) {
-        return donHangRepository.findByKhachHangIdOrderByNgayTaoDesc(idKhach);
+        try {
+            if (idKhach == null) {
+                throw new RuntimeException("ID khách hàng không được null");
+            }
+
+            // ✅ THAY ĐỔI: Chỉ lấy đơn hàng Online
+            List<DonHang> donHangs = donHangRepository.findByKhachHangIdAndLoaiDonHangOnlineWithChiTiet(idKhach);
+
+            // Log để debug
+            System.out.println("Tìm thấy " + donHangs.size() + " đơn hàng Online cho khách hàng ID: " + idKhach);
+
+            return donHangs;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy đơn hàng Online theo khách hàng: " + e.getMessage());
+            throw new RuntimeException("Không thể lấy danh sách đơn hàng Online: " + e.getMessage());
+        }
     }
 
     public DonHang layChiTietDon(Integer id) {
@@ -678,7 +703,7 @@ public class DonHangService {
             }
 
             // Cập nhật trạng thái đơn hàng thành "Đã thanh toán"
-            donHang.setTrangThai(1); // hoặc trạng thái phù hợp
+            donHang.setTrangThai(0); // hoặc trạng thái phù hợp
 
             return convertToDTO(donHangRepository.save(donHang));
         }

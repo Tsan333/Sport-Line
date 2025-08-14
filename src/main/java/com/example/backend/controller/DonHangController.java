@@ -311,4 +311,12 @@ public class DonHangController {
 
         return ResponseEntity.ok("Đã gỡ voucher khỏi đơn hàng");
     }
+
+    @GetMapping("/donhang/khach/{idKhachHang}/trangthai/{trangThai}")
+    public ResponseEntity<List<DonHangDTO>> getDonHangTheoTrangThaiKhachHang(
+            @PathVariable Integer idKhachHang,
+            @PathVariable Integer trangThai) {
+
+        return ResponseEntity.ok(donHangService.filterByTrangThaiAndLoaiAndKhachHang(trangThai, "Online", idKhachHang));
+    }
 }

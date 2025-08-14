@@ -24,13 +24,9 @@ public class KhachHang {
 
 
     @Column(name = "TenKhachHang")
-    @NotEmpty(message = "Tên khách hàng không được để trống!")
-    @Size(min = 5, max= 30, message = "Tên khách hàng phải từ 5 đên 30 ký tự!")
     private String tenKhachHang;
 
     @Column(name = "Email")
-//    @NotEmpty(message = "Email không được để trống!")
-//    @Email(message = "Email không đúng định dạng!")
     private String email;
 
     @Column(name = "NgaySinh")
@@ -46,22 +42,26 @@ public class KhachHang {
     private String diaChi;
 
     @Column(name = "SoDienThoai")
-    @NotEmpty(message = "Số điện thoại không được để trống!")
-    @Size(min = 10, max=10, message = "Số điện thoại phải có đúng 10 chữ sổ!")
-    @Pattern(regexp = "^\\d+$", message = "Số điện thoại chỉ được chứa chữ số!")
     private String soDienThoai;
 
     @Column(name="matKhau")
     private String matKhau;
 
 
-    private Boolean trangThai;
+    @Column(name = "trangThai")
+    private Boolean trangThai = true;
 
     @Column(name = "MaThongBao")
-    private String maThongBao;
+    private String maThongBao = null; // ✅ Default null
+
 
     @Column(name = "ThoiGianThongBao")
-    private LocalDate thoiGianThongBao;
+    private LocalDate thoiGianThongBao = null; // ✅ Default null
+
+
+
+
+
 
 
 
