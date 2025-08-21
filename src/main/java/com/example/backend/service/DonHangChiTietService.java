@@ -185,33 +185,7 @@ public class DonHangChiTietService {
         }
         return null;
     }
-    //    public void updatePricesWhenPromotionChanged(Integer sanPhamChiTietId) {
-//        // Tìm tất cả đơn hàng chi tiết có sản phẩm này
-//        List<DonHangChiTiet> chiTiets = chiTietRepository.findBySanPhamChiTiet_Id(sanPhamChiTietId);
-//
-//        for (DonHangChiTiet chiTiet : chiTiets) {
-//            // Chỉ cập nhật đơn hàng chưa thanh toán
-//            if (chiTiet.getDonHang().getTrangThai() == 0) {
-//                SanPhamChiTiet spct = chiTiet.getSanPhamChiTiet();
-//
-//                // Lấy giá mới nhất - sử dụng giaBanGiamGia
-//                double newPrice;
-//                if (spct.getGiaBanGiamGia() != null && spct.getGiaBanGiamGia() < spct.getGiaBan()) {
-//                    newPrice = spct.getGiaBanGiamGia();
-//                } else {
-//                    newPrice = spct.getGiaBan();
-//                }
-//
-//                // Cập nhật giá và thành tiền
-//                chiTiet.setGia(newPrice);
-//                chiTiet.setThanhTien(newPrice * chiTiet.getSoLuong());
-//                chiTietRepository.save(chiTiet);
-//
-//                // Cập nhật tổng tiền đơn hàng
-//                donHangService.capNhatTongTienDonHang(chiTiet.getDonHang().getId());
-//            }
-//        }
-//    }
+
     public void updatePricesForOrder(Integer orderId) {
         DonHang donHang = donHangRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
