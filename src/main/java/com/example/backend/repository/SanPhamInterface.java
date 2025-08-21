@@ -1,5 +1,6 @@
 package com.example.backend.repository;
 
+import com.example.backend.dto.SanPhanDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.example.backend.entity.SanPham;
@@ -12,6 +13,28 @@ import java.util.Optional;
 
 public interface SanPhamInterface extends JpaRepository<SanPham,Integer> {
 
+//    @Query("SELECT new com.example.backend.dto.SanPhanDTO(" +
+//            "sp.id, sp.tenSanPham, MIN(spct.giaBan), sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai) " +
+//            "FROM SanPham sp JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id " +
+//            "WHERE sp.trangThai = 1 " +
+//            "GROUP BY sp.id, sp.tenSanPham, sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai")
+//    List<SanPhanDTO> findAllActiveProductsWithMinPrice();
+
+    @Query("""
+    SELECT new com.example.backend.dto.SanPhanDTO(
+        sp.id, sp.tenSanPham, 
+        CASE 
+            WHEN MIN(spct.giaBanGiamGia) > 0 THEN MIN(spct.giaBanGiamGia) 
+            ELSE MIN(spct.giaBan) 
+        END, 
+        sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai
+    ) 
+    FROM SanPham sp 
+    JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id 
+    WHERE sp.trangThai = 1 
+    GROUP BY sp.id, sp.tenSanPham, sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai
+    """)
+    List<SanPhanDTO> findAllActiveProductsWithMinPrice();
 
     List<SanPham> findAllByTrangThai(int trangThai);
     Optional<SanPham> findByTenSanPhamIgnoreCase(String maSanPham);

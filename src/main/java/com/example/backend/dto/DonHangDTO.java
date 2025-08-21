@@ -73,6 +73,11 @@ public class DonHangDTO {
 
     private String tenNguoiNhan;
 
+    // Thêm trường ghiChu
+    private String ghiChu;
+
+
+
 
     private List<DonHangChiTietDTO> donHangChiTiets;
 
@@ -97,8 +102,10 @@ public class DonHangDTO {
         this.emailGiaoHang = dh.getEmailGiaoHang();
         this.tenNguoiNhan = dh.getTenNguoiNhan();
 
-        this.trangThai = dh.getTrangThai();
-        this.trangThaiText = TrangThaiDonHang.fromValue(dh.getTrangThai()).name();
+        // ✅ THÊM: Map trường phí vận chuyển
+        this.phiVanChuyen = dh.getPhiVanChuyen();
+        // Trong constructor DonHangDTO(DonHang dh)
+        this.ghiChu = dh.getGhiChu();
 
         // ✅ THÊM: Lưu trạng thái trước khi hủy
         if (dh.getTrangThai() == 5) { // 5 = DA_HUY
@@ -107,8 +114,6 @@ public class DonHangDTO {
                 this.trangThaiTruocKhiHuyText = TrangThaiDonHang.fromValue(this.trangThaiTruocKhiHuy).name();
             }
         }
-
-
 
         if (dh.getDonHangChiTiets() != null) {
             this.donHangChiTiets = dh.getDonHangChiTiets().stream()

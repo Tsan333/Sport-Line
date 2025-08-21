@@ -4,15 +4,14 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class GHNClientService {
-
 
     @Value("${ghn.token}")
     private String ghnToken;
@@ -22,12 +21,12 @@ public class GHNClientService {
 
     private final RestTemplate restTemplate;
 
-
     public GHNClientService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     public int tinhPhiVanChuyen(Integer toDistrictId, String toWardCode, int weightGram) {
+        // ✅ SỬA: Dùng production URL và gọi GHN API thật
         String url = "https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee";
 
         HttpHeaders headers = new HttpHeaders();
@@ -36,7 +35,7 @@ public class GHNClientService {
         headers.set("ShopId", String.valueOf(ghnShopId));
 
         Map<String, Object> body = Map.of(
-                "from_district_id", 1442,
+                "from_district_id", 1442, // Hà Nội
                 "to_district_id", toDistrictId,
                 "to_ward_code", toWardCode,
                 "service_type_id", 2,
@@ -48,8 +47,7 @@ public class GHNClientService {
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        System.out.println("GHN Token = " + ghnToken);
-        System.out.println("GHN ShopId = " + ghnShopId);
+        System.out.println("�� GHN API - Token: " + ghnToken + ", ShopId: " + ghnShopId);
 
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
@@ -62,12 +60,10 @@ public class GHNClientService {
             return (Integer) data.get("total");
 
         } catch (HttpClientErrorException ex) {
-            System.err.println("GHN API lỗi: " + ex.getStatusCode());
-            System.err.println("Body GHN: " + ex.getResponseBodyAsString());
+            System.err.println("❌ GHN API lỗi: " + ex.getStatusCode());
+            System.err.println("❌ Body GHN: " + ex.getResponseBodyAsString());
             throw new RuntimeException("GHN từ chối request! Kiểm tra lại token/ShopId hoặc headers.");
         }
-
-
     }
 
     @PostConstruct

@@ -2,6 +2,7 @@
 package com.example.backend.service;
 
 
+import com.example.backend.dto.SanPhanDTO;
 import com.example.backend.entity.SanPham;
 import com.example.backend.repository.SanPhamInterface;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,10 @@ public class SanPhamService {
     public List<SanPham> getAllActive() {
         return sanPhamRepo.findAll();
     }
-    public List<SanPham> getAllActiveProducts() {
-        return sanPhamRepo.findAllByTrangThai(1);
+    public List<SanPhanDTO> getAllActiveProducts() {
+        return sanPhamRepo.findAllActiveProductsWithMinPrice();
     }
+
 
 
     public SanPham getById(Integer id) {

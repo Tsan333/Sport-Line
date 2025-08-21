@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class ghnConfig {
+
     @Value("${ghn.token}")
     private String token;
 
@@ -39,9 +40,10 @@ public class ghnConfig {
 
     @PostConstruct
     public void printDebug() {
+        System.out.println("=== GHN CONFIGURATION ===");
         System.out.println("GHN Token: " + token);
         System.out.println("Shop ID: " + shopId);
         System.out.println("Base URL: " + baseUrl);
+        System.out.println("=========================");
     }
 }
-

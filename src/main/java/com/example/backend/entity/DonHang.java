@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;  // ✅ THÊM: Import ArrayList
 import java.util.List;
 
 @Getter
@@ -16,7 +17,6 @@ public class DonHang {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
 
     @ManyToOne
     @JoinColumn(name = "idNhanVien")
@@ -45,7 +45,7 @@ public class DonHang {
     @Column(name="TrangThaiTruocKhiHuy")
     private Integer trangThaiTruocKhiHuy;
 
-    @Column(name="TongTien")
+    @Column(name="TongTien", nullable = false)  // ✅ Thêm nullable = false
     private Double tongTien;
 
     @Column(name="TongTienGiamGia")
@@ -63,7 +63,17 @@ public class DonHang {
     @Column(name="TenNguoiNhan")
     private String tenNguoiNhan;
 
-    @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<DonHangChiTiet> donHangChiTiets;
 
+    @Column(name = "phiVanChuyen", nullable = false)  // ✅ Thêm nullable = false
+    private Integer phiVanChuyen;
+
+    @Column(name="GhiChu")
+    private String ghiChu;
+
+    public String getGhiChu() { return ghiChu; }
+    public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
+
+    // ✅ SỬA: Chỉ giữ 1 dòng và khởi tạo list rỗng
+    @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<DonHangChiTiet> donHangChiTiets = new ArrayList<>();
 }

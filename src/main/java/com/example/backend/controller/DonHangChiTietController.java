@@ -60,16 +60,30 @@ public class DonHangChiTietController {
     public ResponseEntity<DonHangChiTietDTO> create(@RequestBody DonHangChiTietDTO dto) {
         return ResponseEntity.ok(chiTietService.create(dto));
     }
+    @PostMapping("/donhangchitiet/them-sp-vao-don-hang")
+    public ResponseEntity<DonHangChiTietDTO> create2(@RequestBody DonHangChiTietDTO dto) {
+        return ResponseEntity.ok(chiTietService.themSPvaoDH(dto));
+    }
 
     @PutMapping("/donhangchitiet/update/{id}")
     public ResponseEntity<DonHangChiTietDTO> update(@PathVariable int id, @RequestBody DonHangChiTietDTO dto) {
         DonHangChiTietDTO updated = chiTietService.update(id, dto);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
+    @PutMapping("/donhangchitiet/updateOnline/{id}")
+    public ResponseEntity<DonHangChiTietDTO> update2(@PathVariable int id, @RequestBody DonHangChiTietDTO dto) {
+        DonHangChiTietDTO updated = chiTietService.update2(id, dto);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    }
 
     @DeleteMapping("/donhangchitiet/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         chiTietService.delete(id);
+        return ResponseEntity.ok().build();
+    }
+    @DeleteMapping("/donhangchitiet/deleteOnline/{id}")
+    public ResponseEntity<Void> delete2(@PathVariable int id) {
+        chiTietService.delete2(id);
         return ResponseEntity.ok().build();
     }
 

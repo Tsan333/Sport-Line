@@ -3,6 +3,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.SPCTDTO;
 
+import com.example.backend.dto.SPCTReq;
 import com.example.backend.dto.SPCTRequest;
 import com.example.backend.dto.SanPhamDonHangResponse;
 import com.example.backend.entity.*;
@@ -72,12 +73,12 @@ public class SPCTService {
 
         return spcti.save(spct);
     }
-    public SanPhamChiTiet updateSanPhamChiTiet(Integer idSpct, SPCTRequest request) {
+    public SanPhamChiTiet updateSanPhamChiTiet(Integer idSpct, SPCTReq request) {
         // Tìm biến thể cũ
         SanPhamChiTiet spct = spcti.findById(idSpct)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể sản phẩm"));
 
-        // Lấy id sản phẩm, id màu sắc, id kích thước mới (ưu tiên giá trị mới, nếu không có thì lấy từ spct cũ)
+        // Lấy id sản phẩm, id màu sắc, id kích thước mới
         Integer idSanPham = request.getIdSanPham() != null ? request.getIdSanPham() : spct.getSanPham().getId();
         Integer idMauSac = request.getIdMauSac() != null ? request.getIdMauSac() : spct.getMauSac().getId();
         Integer idKichThuoc = request.getIdKichThuoc() != null ? request.getIdKichThuoc() : spct.getKichThuoc().getId();
@@ -90,7 +91,7 @@ public class SPCTService {
             throw new RuntimeException("Biến thể này đã tồn tại!");
         }
 
-        // Nếu muốn cho phép sửa các trường này:
+        // Cập nhật các trường cơ bản
         if (request.getIdSanPham() != null) {
             SanPham sanPham = spi.findById(request.getIdSanPham())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
@@ -109,11 +110,79 @@ public class SPCTService {
         if (request.getSoLuong() != null) {
             spct.setSoLuong(request.getSoLuong());
         }
-        if (request.getGiaBan() != null) {
-            spct.setGiaBan(request.getGiaBan());
+
+        // Xử lý giá bán và tự động tính lại giá khuyến mãi
+        if (request.getGiaBan() != null && !request.getGiaBan().equals(spct.getGiaBan())) {
+            double oldPrice = spct.getGiaBan();
+            double newPrice = request.getGiaBan();
+
+            // Cập nhật giá bán mới
+            spct.setGiaBan(newPrice);
+
+            // Nếu có khuyến mãi hiện tại, tự động tính lại giá khuyến mãi
+            if (spct.getKhuyenMai() != null && spct.getGiaBanGiamGia() != null) {
+                // Tính tỷ lệ giảm giá cũ
+                double discountRatio = (oldPrice - spct.getGiaBanGiamGia()) / oldPrice;
+
+                // Áp dụng tỷ lệ giảm giá cũ cho giá mới
+                double newDiscountedPrice = newPrice * (1 - discountRatio);
+
+                // Đảm bảo giá khuyến mãi không cao hơn giá bán
+                if (newDiscountedPrice >= newPrice) {
+                    newDiscountedPrice = newPrice;
+                }
+
+                // Cập nhật giá khuyến mãi mới
+                spct.setGiaBanGiamGia((double) Math.round(newDiscountedPrice));
+            }
         }
+
         if (request.getNgaySanXuat() != null) {
             spct.setNgaySanXuat((Date) request.getNgaySanXuat());
+        }
+
+        // Xử lý khuyến mãi mới (nếu có)
+        if (request.getIdKhuyenMai() != null) {
+            if (request.getIdKhuyenMai() == 0) {
+                // Reset khuyến mãi về null
+                spct.setKhuyenMai(null);
+                spct.setGiaBanGiamGia(null);
+            } else {
+                try {
+                    // Tìm khuyến mãi mới
+                    KhuyenMai khuyenMai = khuyenMaiRepository.findById(request.getIdKhuyenMai())
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi"));
+
+                    // Kiểm tra trạng thái khuyến mãi
+                    if (khuyenMai.getTrangThai() != 1) {
+                        throw new RuntimeException("Khuyến mãi không còn hiệu lực");
+                    }
+
+                    // Kiểm tra ngày hiệu lực
+                    LocalDateTime now = LocalDateTime.now();
+                    if (khuyenMai.getNgayBatDau() != null && now.isBefore(khuyenMai.getNgayBatDau())) {
+                        throw new RuntimeException("Khuyến mãi chưa bắt đầu");
+                    }
+                    if (khuyenMai.getNgayKetThuc() != null && now.isAfter(khuyenMai.getNgayKetThuc())) {
+                        throw new RuntimeException("Khuyến mãi đã hết hạn");
+                    }
+
+                    // Set khuyến mãi mới
+                    spct.setKhuyenMai(khuyenMai);
+
+                    // Tính giá khuyến mãi mới theo giá bán hiện tại
+                    if (khuyenMai.getGiaTri() != null && khuyenMai.getGiaTri() > 0) {
+                        double giamGia = spct.getGiaBan() * khuyenMai.getGiaTri() / 100.0;
+                        double giaKhuyenMai = spct.getGiaBan() - giamGia;
+                        spct.setGiaBanGiamGia((double) Math.round(giaKhuyenMai));
+                    } else {
+                        spct.setGiaBanGiamGia(spct.getGiaBan());
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException("Lỗi khi xử lý khuyến mãi: " + e.getMessage());
+                }
+            }
         }
 
         return spcti.save(spct);

@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 
+import com.example.backend.dto.SanPhanDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class SanPhamRestController {
     }
 
     @GetMapping("/getAllOnline")
-    public List<SanPham> getAllOnline() {
+    public List<SanPhanDTO> getAllOnline() {
         return sanPhamService.getAllActiveProducts();
     }
 

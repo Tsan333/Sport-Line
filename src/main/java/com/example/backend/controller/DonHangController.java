@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import java.util.Collections;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -115,9 +116,29 @@ public class DonHangController {
         }
     }
 
+    @GetMapping("/donhang/search-online")
+    public ResponseEntity<List<DonHangDTO>> searchDonHangOnline(
+            @RequestParam(required = false) String searchText,        // Tìm theo tên hoặc SĐT
+            @RequestParam(required = false) String tuNgay,           // Từ ngày tạo
+            @RequestParam(required = false) String denNgay) {        // Đến ngày tạo
+
+        try {
+            List<DonHangDTO> donHangs = donHangService.searchDonHangOnline(searchText, tuNgay, denNgay);
+            return ResponseEntity.ok(donHangs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
 
 
 
+    @PostMapping("/donhang/create-online")
+    public ResponseEntity<DonHangDTO> createOnline(@RequestBody DonHangDTO dto) {
+        // Logic riêng cho đơn hàng online
+        return ResponseEntity.ok(donHangService.createOnline(dto));
+    }
     @PostMapping("/donhang/create")
     public ResponseEntity<DonHangDTO> create(@RequestBody DonHangDTO dto) {
         return ResponseEntity.ok(donHangService.create(dto));
@@ -188,26 +209,56 @@ public class DonHangController {
     }
 
     // ❌ 3. Hủy đơn
+    // Thay đổi từ @PathVariable thành @RequestBody
     @PutMapping("/donhang/huy/{id}")
-    public ResponseEntity<DonHangDTO> huyDon(@PathVariable Integer id) {
-        donHangService.huyDon(id);
+    public ResponseEntity<DonHangDTO> huyDon(
+            @PathVariable Integer id,
+            @RequestBody HuyDonRequest request
+    ) {
+        donHangService.huyDon(id, request.getGhiChu());
         DonHang updated = donHangService.layChiTietDon(id);
         return ResponseEntity.ok(new DonHangDTO(updated));
     }
 
     // ✏️ 4. Cập nhật địa chỉ + tính phí giao hàng (GHN giả lập)
     @PutMapping("/donhang/sua-dia-chi")
-    public ResponseEntity<DonHangDTO> suaDiaChi(@RequestParam Integer id,
-                                                @RequestParam String diaChiMoi,
-                                                @RequestParam String soDienThoaiMoi,
-                                                @RequestParam String tenNguoiNhanMoi,
-                                                @RequestParam String emailMoi,
-                                                @RequestParam Integer districtId,
-                                                @RequestParam String wardCode) {
-        DonHangDTO dto = donHangService.capNhatDiaChiVaTinhPhi(
-                id, diaChiMoi, soDienThoaiMoi, tenNguoiNhanMoi, emailMoi, districtId, wardCode
-        );
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<Map<String, Object>> suaDiaChi(
+            @RequestParam Integer id,
+            @RequestParam String diaChiMoi,
+            @RequestParam String soDienThoaiMoi,
+            @RequestParam String tenNguoiNhanMoi,
+            @RequestParam String emailMoi,
+            @RequestParam Integer districtId,
+            @RequestParam String wardCode,
+            @RequestParam(required = false) Integer phiVanChuyenMoi  // ✅ THÊM: Phí ship mới từ frontend
+    ) {
+        try {
+            // ✅ SỬA: Truyền phí ship mới vào service
+            DonHangDTO dto = donHangService.capNhatDiaChiVaTinhPhi(
+                    id, diaChiMoi, soDienThoaiMoi, tenNguoiNhanMoi, emailMoi,
+                    districtId, wardCode, phiVanChuyenMoi
+            );
+
+            // ✅ Lấy thông tin đơn hàng đã cập nhật để có tổng tiền mới
+            DonHang donHang = donHangRepository.findById(id).orElseThrow();
+
+            // ✅ Trả về response với đầy đủ thông tin
+            Map<String, Object> response = new HashMap<>();
+            response.put("donHang", dto);
+            response.put("phiVanChuyen", dto.getPhiVanChuyen());
+            response.put("tongTienMoi", donHang.getTongTien());
+            response.put("diaChiGiaoHang", donHang.getDiaChiGiaoHang());
+            response.put("tenNguoiNhan", donHang.getTenNguoiNhan());
+            response.put("soDienThoaiGiaoHang", donHang.getSoDienThoaiGiaoHang());
+            response.put("emailGiaoHang", donHang.getEmailGiaoHang());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Lỗi khi cập nhật địa chỉ: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     // 📜 5. Lịch sử đơn của khách hàng
@@ -261,6 +312,19 @@ public class DonHangController {
             return ResponseEntity.ok(new DonHangDTO(updated));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+    @PutMapping("/don-hang/{id}/cap-nhat-tong-tien")
+    public ResponseEntity<?> capNhatTongTienDonHang(@PathVariable Integer id) {
+        try {
+            DonHangDTO updated = donHangService.capNhatTongTienPhiShip(id);
+            if (updated != null) {
+                return ResponseEntity.ok(updated);
+            } else {
+                return ResponseEntity.badRequest().body("Không thể cập nhật tổng tiền đơn hàng");
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

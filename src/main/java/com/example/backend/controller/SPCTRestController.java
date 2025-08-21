@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 
 import com.example.backend.dto.SPCTDTO;
+import com.example.backend.dto.SPCTReq;
 import com.example.backend.dto.SPCTRequest;
 import com.example.backend.entity.SanPhamChiTiet;
 
@@ -81,11 +82,15 @@ public class SPCTRestController {
     @PutMapping("/sua/{idSpct}")
     public ResponseEntity<?> suaBienThe(
             @PathVariable Integer idSpct,
-            @RequestBody SPCTRequest request) {
+            @RequestBody SPCTReq SPCTrequest) {
         try {
-            SanPhamChiTiet spct = service.updateSanPhamChiTiet(idSpct, request);
+            // Log để debug
+            System.out.println("Updating SPCT " + idSpct + " with idKhuyenMai: " + SPCTrequest.getIdKhuyenMai());
+
+            SanPhamChiTiet spct = service.updateSanPhamChiTiet(idSpct, SPCTrequest);
             return ResponseEntity.ok(spct);
         } catch (RuntimeException e) {
+            System.err.println("Error updating SPCT: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
