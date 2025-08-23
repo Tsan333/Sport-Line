@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -33,12 +34,32 @@ public class KichThuocService {
 
 
     public ResponseEntity<?> create(KichThuoc kichThuoc) {
-        Optional<KichThuoc> existing = kti.findByTenKichThuocIgnoreCase(kichThuoc.getTenKichThuoc());
+        // Chuẩn hóa tên: trim + loại bỏ khoảng trắng thừa ở giữa
+        String tenKichThuoc = normalizeTenKichThuoc(kichThuoc.getTenKichThuoc());
+
+        if (tenKichThuoc.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên kích thước không được để trống!");
+        }
+
+        Optional<KichThuoc> existing = kti.findByTenKichThuocIgnoreCase(tenKichThuoc);
         if (existing.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Kích thước đã tồn tại!");
         }
+
+        kichThuoc.setTenKichThuoc(tenKichThuoc);
         KichThuoc newKichThuoc = kti.save(kichThuoc);
         return ResponseEntity.status(HttpStatus.CREATED).body(newKichThuoc);
+    }
+
+
+
+    private String normalizeTenKichThuoc(String tenKichThuoc) {
+        if (tenKichThuoc == null) return "";
+
+        return tenKichThuoc
+                .trim() // Loại bỏ khoảng trắng đầu cuối
+                .replaceAll("\\s+", "") // Loại bỏ TẤT CẢ khoảng trắng
+                .toLowerCase(Locale.ROOT); // Chuyển về chữ thường với locale chuẩn
     }
 
     public ResponseEntity<?> update(Integer id, KichThuoc kichThuoc) {
@@ -47,11 +68,21 @@ public class KichThuocService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Kích thước với ID: " + id);
         }
 
-        Optional<KichThuoc> existing = kti.findByTenKichThuocIgnoreCase(kichThuoc.getTenKichThuoc());
+        // Chuẩn hóa tên: trim + loại bỏ khoảng trắng thừa ở giữa
+        String tenKichThuoc = normalizeTenKichThuoc(kichThuoc.getTenKichThuoc());
+
+        if (tenKichThuoc.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên kích thước không được để trống!");
+        }
+
+        // Kiểm tra trùng lặp với tên đã chuẩn hóa
+        Optional<KichThuoc> existing = kti.findByTenKichThuocIgnoreCase(tenKichThuoc);
         if (existing.isPresent() && !existing.get().getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên kích thước đã tồn tại!");
         }
 
+        // Cập nhật tên đã chuẩn hóa vào entity
+        kichThuoc.setTenKichThuoc(tenKichThuoc);
         kichThuoc.setId(id);
         KichThuoc updated = kti.save(kichThuoc);
         return ResponseEntity.ok(updated);

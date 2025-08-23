@@ -373,10 +373,8 @@ public class DonHangService {
             kh.ifPresent(dh::setKhachHang);
         }
 
-        // ✅ SỬA: Kiểm tra voucher (không cần set lại tongTien)
+        // chỉ set voucher nếu có
         if (dto.getIdgiamGia() != null) {
-            // tongTien đã được set ở trên rồi
-            voucherService.kiemTraDieuKienVoucher(dh, dto.getIdgiamGia());
             Optional<Voucher> voucher = voucherRepository.findById(dto.getIdgiamGia());
             voucher.ifPresent(dh::setGiamGia);
         }
@@ -533,13 +531,105 @@ public class DonHangService {
         return new DonHangDTO(don);
     }
 
-    // Xác nhận đơn
-    public void xacNhanDon(Integer id) {
-        DonHang d = donHangRepository.findById(id).orElseThrow();
-        d.setTrangThai(TrangThaiDonHang.XAC_NHAN.getValue());
-        d.setNgayMua(LocalDate.now());
-        donHangRepository.save(d);
-    }
+
+
+
+
+        public void xacNhanDon(Integer id) {
+            DonHang d = donHangRepository.findById(id).orElseThrow();
+            d.setTrangThai(TrangThaiDonHang.XAC_NHAN.getValue());
+            d.setNgayMua(LocalDate.now());
+            donHangRepository.save(d);
+
+            // ✅ THÊM: Trừ số lượng tồn kho sản phẩm
+            trutonKhoSanPham(d);
+        }
+
+        // ✅ THÊM: Method trừ tồn kho sản phẩm
+        private void trutonKhoSanPham(DonHang donHang) {
+            if (donHang.getDonHangChiTiets() != null && !donHang.getDonHangChiTiets().isEmpty()) {
+                System.out.println("🔄 Bắt đầu trừ tồn kho sản phẩm cho đơn hàng: " + donHang.getId());
+
+                for (DonHangChiTiet chiTiet : donHang.getDonHangChiTiets()) {
+                    try {
+                        // Lấy sản phẩm chi tiết từ DB
+                        SanPhamChiTiet spct = sanPhamChiTietRepository.findById(chiTiet.getSanPhamChiTiet().getId())
+                                .orElse(null);
+
+                        if (spct != null) {
+                            System.out.println("�� Sản phẩm: " + spct.getSanPham().getTenSanPham());
+                            System.out.println("�� Kích thước: " + spct.getKichThuoc().getTenKichThuoc());
+                            System.out.println("🎨 Màu sắc: " + spct.getMauSac().getTenMauSac());
+                            System.out.println("📊 Số lượng tồn kho hiện tại: " + spct.getSoLuong());
+                            System.out.println("�� Số lượng đã bán: " + chiTiet.getSoLuong());
+
+                            // ✅ Kiểm tra số lượng tồn kho có đủ không
+                            if (spct.getSoLuong() >= chiTiet.getSoLuong()) {
+                                // Trừ số lượng tồn kho
+                                int soLuongCu = spct.getSoLuong();
+                                spct.setSoLuong(spct.getSoLuong() - chiTiet.getSoLuong());
+
+                                // Lưu lại sản phẩm chi tiết
+                                SanPhamChiTiet savedSpct = sanPhamChiTietRepository.save(spct);
+
+                                System.out.println("✅ Đã trừ tồn kho thành công!");
+                                System.out.println("📊 Số lượng cũ: " + soLuongCu + " → Mới: " + savedSpct.getSoLuong());
+                            } else {
+                                System.out.println("⚠️ CẢNH BÁO: Số lượng tồn kho không đủ!");
+                                System.out.println("📊 Tồn kho: " + spct.getSoLuong() + " < Đã bán: " + chiTiet.getSoLuong());
+                            }
+                        } else {
+                            System.out.println("❌ Không tìm thấy sản phẩm chi tiết với ID: " + chiTiet.getSanPhamChiTiet().getId());
+                        }
+
+                        System.out.println("---");
+
+                    } catch (Exception e) {
+                        System.err.println("❌ Lỗi khi trừ tồn kho sản phẩm: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+
+                System.out.println("�� Hoàn thành trừ tồn kho sản phẩm!");
+            } else {
+                System.out.println("ℹ️ Đơn hàng không có chi tiết sản phẩm");
+            }
+        }
+
+
+//    public void huyDon(Integer idDon, String ghiChu) {
+//        DonHang don = donHangRepository.findById(idDon)
+//                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn"));
+//
+//        int trangThaiCu = don.getTrangThai();
+//
+//        // Kiểm tra trạng thái có được phép hủy
+//        List<Integer> trangThaiDuocHuy = List.of(0, 1, 2, 3); // Được hủy nếu chưa giao
+//        if (!trangThaiDuocHuy.contains(trangThaiCu)) {
+//            throw new RuntimeException("Không thể hủy đơn ở trạng thái: "
+//                    + TrangThaiDonHang.fromValue(trangThaiCu).getDisplayName());
+//        }
+//
+//        // Lưu trạng thái trước khi hủy
+//        don.setTrangThaiTruocKhiHuy(trangThaiCu);
+//
+//        // Cập nhật trạng thái đơn
+//        don.setTrangThai(TrangThaiDonHang.DA_HUY.getValue());
+//
+//        // ✅ THÊM: Lưu lý do hủy
+//        don.setGhiChu(ghiChu);
+//
+//        // Hoàn lại số lượng sản phẩm
+//        for (DonHangChiTiet ct : don.getDonHangChiTiets()) {
+//            SanPhamChiTiet sp = ct.getSanPhamChiTiet();
+//            if (sp != null) {
+//                int hienTai = sp.getSoLuong();
+//                sp.setSoLuong(hienTai + ct.getSoLuong());
+//                spctRepo.save(sp);
+//            }
+//        }
+//        donHangRepository.save(don);
+//    }
 
     public void huyDon(Integer idDon, String ghiChu) {
         DonHang don = donHangRepository.findById(idDon)
@@ -563,15 +653,44 @@ public class DonHangService {
         // ✅ THÊM: Lưu lý do hủy
         don.setGhiChu(ghiChu);
 
-        // Hoàn lại số lượng sản phẩm
-        for (DonHangChiTiet ct : don.getDonHangChiTiets()) {
-            SanPhamChiTiet sp = ct.getSanPhamChiTiet();
-            if (sp != null) {
-                int hienTai = sp.getSoLuong();
-                sp.setSoLuong(hienTai + ct.getSoLuong());
-                spctRepo.save(sp);
-            }
+        // ✅ THÊM: Hoàn lại voucher nếu đơn hàng có sử dụng
+        if (don.getGiamGia() != null) {
+            Voucher voucher = don.getGiamGia();
+            // Hoàn lại số lượng voucher
+            voucher.setSoLuong(voucher.getSoLuong() + 1);
+            voucherRepository.save(voucher);
+
+            // Xóa voucher khỏi đơn hàng
+            don.setGiamGia(null);
+            don.setTongTienGiamGia(0.0); // Reset giảm giá về 0
         }
+
+        // ✅ SỬA: Chỉ hoàn lại tồn kho cho trạng thái 1, 2, 3
+        if (trangThaiCu != 0) {
+            System.out.println("🔄 Đơn hàng trạng thái " + trangThaiCu + " - Bắt đầu hoàn lại tồn kho...");
+
+            // Hoàn lại số lượng sản phẩm
+            for (DonHangChiTiet ct : don.getDonHangChiTiets()) {
+                SanPhamChiTiet sp = ct.getSanPhamChiTiet();
+                if (sp != null) {
+                    int soLuongCu = sp.getSoLuong();
+                    int soLuongHoanLai = ct.getSoLuong();
+
+                    // Hoàn lại tồn kho
+                    sp.setSoLuong(soLuongCu + soLuongHoanLai);
+                    spctRepo.save(sp);
+
+                    System.out.println("✅ Đã hoàn lại tồn kho sản phẩm: " + sp.getSanPham().getTenSanPham());
+                    System.out.println("📊 Số lượng cũ: " + soLuongCu + " → Mới: " + sp.getSoLuong());
+                    System.out.println("🔄 Hoàn lại: +" + soLuongHoanLai);
+                }
+            }
+
+            System.out.println("✅ Hoàn thành hoàn lại tồn kho!");
+        } else {
+            System.out.println("ℹ️ Đơn hàng trạng thái 0 (chờ thanh toán) - KHÔNG hoàn lại tồn kho");
+        }
+
         donHangRepository.save(don);
     }
 
@@ -861,26 +980,18 @@ public class DonHangService {
                     throw new RuntimeException("Không tìm thấy voucher");
                 }
 
-                // Kiểm tra điều kiện áp dụng voucher
-                voucherService.kiemTraDieuKienVoucher(donHang, idVoucher);
-
-                // Kiểm tra xem đơn hàng đã có voucher chưa
-                Voucher oldVoucher = donHang.getGiamGia();
-                if (oldVoucher != null) {
-                    // Hoàn lại voucher cũ (nếu có)
-                    oldVoucher.setSoLuong(oldVoucher.getSoLuong() + 1);
-                    voucherRepository.save(oldVoucher);
+                // ✅ THÊM: Trừ số lượng voucher đi 1
+                if (voucher.getSoLuong() > 0) {
+                    voucher.setSoLuong(voucher.getSoLuong() - 1);
+                    voucherRepository.save(voucher);  // Lưu thay đổi số lượng
+                    System.out.println("✅ Đã trừ số lượng voucher: " + voucher.getMaVoucher() + " từ " + (voucher.getSoLuong() + 1) + " xuống " + voucher.getSoLuong());
+                } else {
+                    throw new RuntimeException("Voucher đã hết số lượng");
                 }
 
-                // Áp dụng voucher mới (KHÔNG trừ số lượng)
+                // Áp dụng voucher mới vào đơn hàng
                 donHang.setGiamGia(voucher);
             } else {
-                // Xóa voucher cũ (nếu có)
-                Voucher oldVoucher = donHang.getGiamGia();
-                if (oldVoucher != null) {
-                    oldVoucher.setSoLuong(oldVoucher.getSoLuong() + 1);
-                    voucherRepository.save(oldVoucher);
-                }
                 donHang.setGiamGia(null);
             }
 

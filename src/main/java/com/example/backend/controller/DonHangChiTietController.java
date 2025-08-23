@@ -59,6 +59,9 @@ public class DonHangChiTietController {
     @PostMapping("/donhangchitiet/create")
     public ResponseEntity<DonHangChiTietDTO> create(@RequestBody DonHangChiTietDTO dto) {
         return ResponseEntity.ok(chiTietService.create(dto));
+    }@PostMapping("/donhangchitiet/create_k_tru_ton_kho")
+    public ResponseEntity<DonHangChiTietDTO> create1(@RequestBody DonHangChiTietDTO dto) {
+        return ResponseEntity.ok(chiTietService.create_k_tru_sl(dto));
     }
     @PostMapping("/donhangchitiet/them-sp-vao-don-hang")
     public ResponseEntity<DonHangChiTietDTO> create2(@RequestBody DonHangChiTietDTO dto) {

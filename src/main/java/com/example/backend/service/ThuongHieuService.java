@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -31,11 +32,32 @@ public class ThuongHieuService {
     public List<ThuongHieu> searchByName(String name) {
         return thi.findByTenThuongHieuContainingIgnoreCase(name);
     }
+
+    private String normalizeTenThuongHieu(String tenThuongHieu) {
+        if (tenThuongHieu == null) return "";
+
+        return tenThuongHieu
+                .trim() // Loại bỏ khoảng trắng đầu cuối
+                .replaceAll("\\s+", "") // Loại bỏ TẤT CẢ khoảng trắng
+                .toLowerCase(Locale.ROOT); // Chuyển về chữ thường với locale chuẩn
+    }
+
     public ResponseEntity<?> create(ThuongHieu thuongHieu) {
-        Optional<ThuongHieu> existing = thi.findByTenThuongHieuIgnoreCase(thuongHieu.getTenThuongHieu());
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenThuongHieu = normalizeTenThuongHieu(thuongHieu.getTenThuongHieu());
+
+        if (tenThuongHieu.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên thương hiệu không được để trống!");
+        }
+
+        // ✅ SỬA: Sử dụng tên đã chuẩn hóa để kiểm tra trùng lặp
+        Optional<ThuongHieu> existing = thi.findByTenThuongHieuIgnoreCase(tenThuongHieu);
         if (existing.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Thương hiệu đã tồn tại!");
         }
+
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        thuongHieu.setTenThuongHieu(tenThuongHieu);
         ThuongHieu saved = thi.save(thuongHieu);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -46,11 +68,21 @@ public class ThuongHieuService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Thương hiệu với ID: " + id);
         }
 
-        Optional<ThuongHieu> existing = thi.findByTenThuongHieuIgnoreCase(thuongHieu.getTenThuongHieu());
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenThuongHieu = normalizeTenThuongHieu(thuongHieu.getTenThuongHieu());
+
+        if (tenThuongHieu.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên thương hiệu không được để trống!");
+        }
+
+        // ✅ SỬA: Sử dụng tên đã chuẩn hóa để kiểm tra trùng lặp
+        Optional<ThuongHieu> existing = thi.findByTenThuongHieuIgnoreCase(tenThuongHieu);
         if (existing.isPresent() && !existing.get().getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên thương hiệu đã tồn tại!");
         }
 
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        thuongHieu.setTenThuongHieu(tenThuongHieu);
         thuongHieu.setId(id);
         ThuongHieu updated = thi.save(thuongHieu);
         return ResponseEntity.ok(updated);

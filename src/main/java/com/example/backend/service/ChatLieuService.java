@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 
@@ -37,12 +38,34 @@ public class ChatLieuService {
         return cli.findById(id);
     }
 
+    private String normalizeTenChatLieu(String tenChatLieu) {
+        if (tenChatLieu == null) return "";
+
+        return tenChatLieu
+                .trim() // Loại bỏ khoảng trắng đầu cuối
+                .replaceAll("\\s+", "") // Loại bỏ TẤT CẢ khoảng trắng
+                .toLowerCase(Locale.ROOT); // Chuyển về chữ thường với locale chuẩn
+    }
+
     public ResponseEntity<?> create(ChatLieu chatLieu) {
-        Optional<ChatLieu> existing = cli.findByTenChatLieuIgnoreCase(chatLieu.getTenChatLieu());
-        if (existing.isPresent()) {
+        // THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenChatLieu = normalizeTenChatLieu(chatLieu.getTenChatLieu());
+
+        if (tenChatLieu.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên chất liệu không được để trống!");
+        }
+
+        //  SỬA: Lấy tất cả chất liệu và so sánh sau khi normalize
+        List<ChatLieu> allChatLieu = cli.findAll();
+        boolean isDuplicate = allChatLieu.stream()
+                .anyMatch(existing -> normalizeTenChatLieu(existing.getTenChatLieu()).equals(tenChatLieu));
+
+        if (isDuplicate) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Chất liệu đã tồn tại!");
         }
 
+        //  THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        chatLieu.setTenChatLieu(tenChatLieu);
         ChatLieu newChatLieu = cli.save(chatLieu);
         return ResponseEntity.status(HttpStatus.CREATED).body(newChatLieu);
     }
@@ -53,11 +76,25 @@ public class ChatLieuService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Chất liệu với ID: " + id);
         }
 
-        Optional<ChatLieu> existing = cli.findByTenChatLieuIgnoreCase(chatLieu.getTenChatLieu());
-        if (existing.isPresent() && !existing.get().getId().equals(id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên chất liệu đã tồn tại!");
+        //  THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenChatLieu = normalizeTenChatLieu(chatLieu.getTenChatLieu());
+
+        if (tenChatLieu.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên chất liệu không được để trống!");
         }
 
+        //  SỬA: Lấy tất cả chất liệu và so sánh sau khi normalize (giống như create)
+        List<ChatLieu> allChatLieu = cli.findAll();
+        boolean isDuplicate = allChatLieu.stream()
+                .anyMatch(existing -> !existing.getId().equals(id) &&
+                        normalizeTenChatLieu(existing.getTenChatLieu()).equals(tenChatLieu));
+
+        if (isDuplicate) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên chất liệu đã tồnại!");
+        }
+
+        // THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        chatLieu.setTenChatLieu(tenChatLieu);
         chatLieu.setId(id);
         ChatLieu updated = cli.save(chatLieu);
         return ResponseEntity.ok(updated);

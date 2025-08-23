@@ -2,6 +2,7 @@
 package com.example.backend.service;
 
 
+import com.example.backend.dto.SanPhamKhuyenMaiDTO;
 import com.example.backend.dto.SanPhanDTO;
 import com.example.backend.entity.SanPham;
 import com.example.backend.repository.SanPhamInterface;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 
@@ -23,6 +25,11 @@ public class SanPhamService {
     public List<SanPham> getAllActive() {
         return sanPhamRepo.findAll();
     }
+
+    public List<SanPhamKhuyenMaiDTO> getAllProductsWithPromotion() {
+        return sanPhamRepo.findAllProductsWithPromotion();
+    }
+
     public List<SanPhanDTO> getAllActiveProducts() {
         return sanPhamRepo.findAllActiveProductsWithMinPrice();
     }
@@ -44,11 +51,33 @@ public class SanPhamService {
         );
     }
 
+    private String normalizeTenSanPham(String tenSanPham) {
+        if (tenSanPham == null) return "";
+        return tenSanPham
+                .trim()
+                .replaceAll("\\s+", "")
+                .toLowerCase(Locale.ROOT);
+    }
+
     public SanPham create(SanPham sanPham) {
-        Optional<SanPham> existing = sanPhamRepo.findByTenSanPhamIgnoreCase(sanPham.getTenSanPham());
-        if (existing.isPresent()) {
-            throw new RuntimeException("Mã sản phẩm đã tồn tại!");
+        // ✅ Chuẩn hóa tên CHỈ ĐỂ KIỂM TRA trùng lặp
+        String tenSanPhamNormalized = normalizeTenSanPham(sanPham.getTenSanPham());
+
+        if (tenSanPhamNormalized.isEmpty()) {
+            throw new RuntimeException("Tên sản phẩm không được để trống!");
         }
+
+        // ✅ Kiểm tra trùng lặp với tên đã chuẩn hóa
+        List<SanPham> allSanPham = sanPhamRepo.findAll();
+        boolean isDuplicate = allSanPham.stream()
+                .anyMatch(existing -> normalizeTenSanPham(existing.getTenSanPham()).equals(tenSanPhamNormalized));
+
+        if (isDuplicate) {
+            throw new RuntimeException("Tên sản phẩm đã tồnại!");
+        }
+
+
+        // ✅ Giữ nguyên tên gốc từ người dùng
         sanPham.setTrangThai(1);
         return sanPhamRepo.save(sanPham);
     }
@@ -57,12 +86,26 @@ public class SanPhamService {
         SanPham current = sanPhamRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
 
-        Optional<SanPham> existing = sanPhamRepo.findByTenSanPhamIgnoreCase(sanPham.getTenSanPham());
-        if (existing.isPresent() && !existing.get().getId().equals(id)) {
-            throw new RuntimeException("Mã sản phẩm đã tồn tại!");
+        // ✅ Chuẩn hóa tên CHỈ ĐỂ KIỂM TRA trùng lặp
+        String tenSanPhamNormalized = normalizeTenSanPham(sanPham.getTenSanPham());
+
+        if (tenSanPhamNormalized.isEmpty()) {
+            throw new RuntimeException("Tên sản phẩm không được để trống!");
         }
 
-        sanPham.setId(id); // Gán id vào entity
+        // ✅ Kiểm tra trùng lặp với tên đã chuẩn hóa
+        List<SanPham> allSanPham = sanPhamRepo.findAll();
+        boolean isDuplicate = allSanPham.stream()
+                .anyMatch(existing -> !existing.getId().equals(id) &&
+                        normalizeTenSanPham(existing.getTenSanPham()).equals(tenSanPhamNormalized));
+
+        if (isDuplicate) {
+            throw new RuntimeException("Tên sản phẩm đã tồnại!");
+        }
+
+
+        // ✅ Giữ nguyên tên gốc từ người dùng
+        sanPham.setId(id);
         return sanPhamRepo.save(sanPham);
     }
 

@@ -90,6 +90,39 @@ public class DonHangChiTietService {
 
         return convertToDTO(saved);
     }
+    public DonHangChiTietDTO create_k_tru_sl(DonHangChiTietDTO dto) {
+        // 1. Lấy sản phẩm chi tiết từ DB
+        SanPhamChiTiet spct = sanPhamChiTietRepository.findById(dto.getIdSanPhamChiTiet())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết!"));
+
+        // ✅ GIỮ: Kiểm tra tồn kho (để đảm bảo có đủ hàng)
+        if (spct.getSoLuong() < dto.getSoLuong()) {
+            throw new RuntimeException("Số lượng tồn kho không đủ!");
+        }
+
+        // ❌ BỎ: Chỉ bỏ phần trừ tồn kho
+        // spct.setSoLuong(spct.getSoLuong() - dto.getSoLuong());
+        // sanPhamChiTietRepository.save(spct);
+
+        // 2. Xử lý cộng dồn hoặc tạo mới chi tiết hóa đơn
+        Optional<DonHangChiTiet> optional = chiTietRepository
+                .findByDonHang_IdAndSanPhamChiTiet_Id(dto.getIdDonHang(), dto.getIdSanPhamChiTiet());
+
+        DonHangChiTiet chiTiet;
+        if (optional.isPresent()) {
+            chiTiet = optional.get();
+            chiTiet.setSoLuong(chiTiet.getSoLuong() + dto.getSoLuong());
+            chiTiet.setThanhTien(chiTiet.getThanhTien() + dto.getThanhTien());
+        } else {
+            chiTiet = convertToEntity(dto);
+        }
+
+        // 3. Lưu và cập nhật tổng tiền đơn hàng
+        DonHangChiTiet saved = chiTietRepository.save(chiTiet);
+        donHangService.capNhatTongTienDonHang(dto.getIdDonHang());
+
+        return convertToDTO(saved);
+    }
 
     public DonHangChiTietDTO themSPvaoDH(DonHangChiTietDTO dto) {
         // 1. Lấy sản phẩm chi tiết từ DB

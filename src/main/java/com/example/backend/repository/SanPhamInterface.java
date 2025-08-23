@@ -1,5 +1,6 @@
 package com.example.backend.repository;
 
+import com.example.backend.dto.SanPhamKhuyenMaiDTO;
 import com.example.backend.dto.SanPhanDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,30 @@ import java.util.Optional;
 
 public interface SanPhamInterface extends JpaRepository<SanPham,Integer> {
 
+
+    @Query("""
+    SELECT new com.example.backend.dto.SanPhamKhuyenMaiDTO(
+        sp.id, sp.tenSanPham, 
+        MIN(spct.giaBan),           
+        MIN(spct.giaBanGiamGia),    
+        sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai,
+        km.id,                     
+        km.tenKhuyenMai,            
+        km.giaTri                   
+    ) 
+    FROM SanPham sp 
+    JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id 
+    LEFT JOIN spct.khuyenMai km     
+    WHERE sp.trangThai = 1 
+    AND (spct.giaBanGiamGia > 0 OR km.id IS NOT NULL)  
+    GROUP BY sp.id, sp.tenSanPham, sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai,
+             km.id, km.tenKhuyenMai, km.giaTri
+    ORDER BY 
+        km.id DESC NULLS LAST,      
+        km.giaTri DESC NULLS LAST  
+    """)
+    List<SanPhamKhuyenMaiDTO> findAllProductsWithPromotion();
+
 //    @Query("SELECT new com.example.backend.dto.SanPhanDTO(" +
 //            "sp.id, sp.tenSanPham, MIN(spct.giaBan), sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai) " +
 //            "FROM SanPham sp JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id " +
@@ -23,16 +48,25 @@ public interface SanPhamInterface extends JpaRepository<SanPham,Integer> {
     @Query("""
     SELECT new com.example.backend.dto.SanPhanDTO(
         sp.id, sp.tenSanPham, 
+        MIN(spct.giaBan),                    
         CASE 
-            WHEN MIN(spct.giaBanGiamGia) > 0 THEN MIN(spct.giaBanGiamGia) 
-            ELSE MIN(spct.giaBan) 
-        END, 
+            WHEN MIN(spct.giaBanGiamGia) > 0 AND MIN(spct.giaBanGiamGia) < MIN(spct.giaBan)
+            THEN MIN(spct.giaBanGiamGia)     
+            ELSE MIN(spct.giaBan)            
+        END,                                 
+        CASE 
+            WHEN MIN(spct.giaBanGiamGia) > 0 AND MIN(spct.giaBanGiamGia) < MIN(spct.giaBan)
+            THEN ROUND(((MIN(spct.giaBan) - MIN(spct.giaBanGiamGia)) / MIN(spct.giaBan)) * 100, 0)
+            ELSE 0
+        END,                                 
         sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai
     ) 
     FROM SanPham sp 
     JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id 
     WHERE sp.trangThai = 1 
-    GROUP BY sp.id, sp.tenSanPham, sp.danhMuc, sp.thuongHieu, sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai
+    GROUP BY sp.id, sp.tenSanPham, sp.danhMuc, sp.thuongHieu, 
+             sp.chatLieu, sp.xuatXu, sp.imanges, sp.trangThai
+    ORDER BY sp.id
     """)
     List<SanPhanDTO> findAllActiveProductsWithMinPrice();
 

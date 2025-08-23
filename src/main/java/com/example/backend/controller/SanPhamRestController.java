@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 
+import com.example.backend.dto.SanPhamKhuyenMaiDTO;
 import com.example.backend.dto.SanPhanDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,11 @@ public class SanPhamRestController {
     @GetMapping("/getAllOnline")
     public List<SanPhanDTO> getAllOnline() {
         return sanPhamService.getAllActiveProducts();
+    }
+
+    @GetMapping("/sp-co-khuyen-mai")
+    public List<SanPhamKhuyenMaiDTO> getAllWithPromotion() {
+        return sanPhamService.getAllProductsWithPromotion();
     }
 
     @GetMapping("/{id}")

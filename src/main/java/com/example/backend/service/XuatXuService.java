@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -36,14 +37,33 @@ public class XuatXuService {
         return xuatXuRepo.findByTenXuatXuContainingIgnoreCase(name);
     }
 
+    private String normalizeTenXuatXu(String tenXuatXu) {
+        if (tenXuatXu == null) return "";
+
+        return tenXuatXu
+                .trim() // Loại bỏ khoảng trắng đầu cuối
+                .replaceAll("\\s+", "") // Loại bỏ TẤT CẢ khoảng trắng
+                .toLowerCase(Locale.ROOT); // Chuyển về chữ thường với locale chuẩn
+    }
 
     public ResponseEntity<?> create(XuatXu xuatXu) {
-        Optional<XuatXu> existing = xuatXuRepo.findByTenXuatXuIgnoreCase(xuatXu.getTenXuatXu());
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenXuatXu = normalizeTenXuatXu(xuatXu.getTenXuatXu());
+
+        if (tenXuatXu.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên xuất xứ không được để trống!");
+        }
+
+        // ✅ SỬA: Sử dụng tên đã chuẩn hóa để kiểm tra trùng lặp
+        Optional<XuatXu> existing = xuatXuRepo.findByTenXuatXuIgnoreCase(tenXuatXu);
         if (existing.isPresent()) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("Xuất xứ đã tồn tại!");
         }
+
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        xuatXu.setTenXuatXu(tenXuatXu);
         XuatXu newXuatXu = xuatXuRepo.save(xuatXu);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -58,16 +78,24 @@ public class XuatXuService {
                     .body("Không tìm thấy Xuất xứ với ID: " + id);
         }
 
-        Optional<XuatXu> existing = xuatXuRepo.findByTenXuatXuIgnoreCase(xuatXu.getTenXuatXu());
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenXuatXu = normalizeTenXuatXu(xuatXu.getTenXuatXu());
+
+        if (tenXuatXu.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên xuất xứ không được để trống!");
+        }
+
+        // ✅ SỬA: Sử dụng tên đã chuẩn hóa để kiểm tra trùng lặp
+        Optional<XuatXu> existing = xuatXuRepo.findByTenXuatXuIgnoreCase(tenXuatXu);
         if (existing.isPresent() && !existing.get().getId().equals(id)) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("Tên xuất xứ đã tồn tại!");
         }
 
-        // Cập nhật thông tin
+        // ✅ SỬA: Cập nhật thông tin với tên đã chuẩn hóa
         XuatXu xuatXuToUpdate = current.get();
-        xuatXuToUpdate.setTenXuatXu(xuatXu.getTenXuatXu());
+        xuatXuToUpdate.setTenXuatXu(tenXuatXu); // Sử dụng tên đã chuẩn hóa
         xuatXuToUpdate.setTrangThai(xuatXu.getTrangThai());
 
         XuatXu updated = xuatXuRepo.save(xuatXuToUpdate);

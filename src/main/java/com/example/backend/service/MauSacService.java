@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -35,11 +36,31 @@ public class MauSacService {
         return msi.findByTenMauSacContainingIgnoreCase(name);
     }
 
+    private String normalizeTenMauSac(String tenMauSac) {
+        if (tenMauSac == null) return "";
+
+        return tenMauSac
+                .trim() // Loại bỏ khoảng trắng đầu cuối
+                .replaceAll("\\s+", "") // Loại bỏ TẤT CẢ khoảng trắng
+                .toLowerCase(Locale.ROOT); // Chuyển về chữ thường với locale chuẩn
+    }
+
     public ResponseEntity<?> create(MauSac mauSac) {
-        Optional<MauSac> existing = msi.findByTenMauSacIgnoreCase(mauSac.getTenMauSac());
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenMauSac = normalizeTenMauSac(mauSac.getTenMauSac());
+
+        if (tenMauSac.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên màu sắc không được để trống!");
+        }
+
+        // ✅ SỬA: Sử dụng tên đã chuẩn hóa để kiểm tra trùng lặp
+        Optional<MauSac> existing = msi.findByTenMauSacIgnoreCase(tenMauSac);
         if (existing.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Màu sắc đã tồn tại!");
         }
+
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        mauSac.setTenMauSac(tenMauSac);
         MauSac saved = msi.save(mauSac);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -50,11 +71,21 @@ public class MauSacService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Màu sắc với ID: " + id);
         }
 
-        Optional<MauSac> existing = msi.findByTenMauSacIgnoreCase(mauSac.getTenMauSac());
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenMauSac = normalizeTenMauSac(mauSac.getTenMauSac());
+
+        if (tenMauSac.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên màu sắc không được để trống!");
+        }
+
+        // ✅ SỬA: Sử dụng tên đã chuẩn hóa để kiểm tra trùng lặp
+        Optional<MauSac> existing = msi.findByTenMauSacIgnoreCase(tenMauSac);
         if (existing.isPresent() && !existing.get().getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên màu sắc đã tồn tại!");
         }
 
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        mauSac.setTenMauSac(tenMauSac);
         mauSac.setId(id);
         MauSac updated = msi.save(mauSac);
         return ResponseEntity.ok(updated);

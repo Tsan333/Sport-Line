@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -34,12 +35,34 @@ public class DanhMucService {
         return dmi.findByTenDanhMucContainingIgnoreCase(name);
     }
 
+    private String normalizeTenDanhMuc(String tenDanhMuc) {
+        if (tenDanhMuc == null) return "";
+
+        return tenDanhMuc
+                .trim() // Loại bỏ khoảng trắng đầu cuối
+                .replaceAll("\\s+", "") // Loại bỏ TẤT CẢ khoảng trắng
+                .toLowerCase(Locale.ROOT); // Chuyển về chữ thường với locale chuẩn
+    }
+
     public ResponseEntity<?> create(DanhMuc danhMuc) {
-        Optional<DanhMuc> existing = dmi.findByTenDanhMucIgnoreCase(danhMuc.getTenDanhMuc());
-        if (existing.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Danh mục đã tồn tại!");
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenDanhMuc = normalizeTenDanhMuc(danhMuc.getTenDanhMuc());
+
+        if (tenDanhMuc.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên danh mục không được để trống!");
         }
 
+        // ✅ SỬA: Lấy tất cả danh mục và so sánh sau khi normalize
+        List<DanhMuc> allDanhMuc = dmi.findAll();
+        boolean isDuplicate = allDanhMuc.stream()
+                .anyMatch(existing -> normalizeTenDanhMuc(existing.getTenDanhMuc()).equals(tenDanhMuc));
+
+        if (isDuplicate) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Danh mục đã tồnại!");
+        }
+
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        danhMuc.setTenDanhMuc(tenDanhMuc);
         DanhMuc newDanhMuc = dmi.save(danhMuc);
         return ResponseEntity.status(HttpStatus.CREATED).body(newDanhMuc);
     }
@@ -50,11 +73,25 @@ public class DanhMucService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Danh mục với ID: " + id);
         }
 
-        Optional<DanhMuc> existing = dmi.findByTenDanhMucIgnoreCase(danhMuc.getTenDanhMuc());
-        if (existing.isPresent() && !existing.get().getId().equals(id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên danh mục đã tồn tại!");
+        // ✅ THÊM: Chuẩn hóa tên trước khi kiểm tra
+        String tenDanhMuc = normalizeTenDanhMuc(danhMuc.getTenDanhMuc());
+
+        if (tenDanhMuc.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tên danh mục không được để trống!");
         }
 
+        // ✅ SỬA: Lấy tất cả danh mục và so sánh sau khi normalize
+        List<DanhMuc> allDanhMuc = dmi.findAll();
+        boolean isDuplicate = allDanhMuc.stream()
+                .anyMatch(existing -> !existing.getId().equals(id) &&
+                        normalizeTenDanhMuc(existing.getTenDanhMuc()).equals(tenDanhMuc));
+
+        if (isDuplicate) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Tên danh mục đã tồnại!");
+        }
+
+        // ✅ THÊM: Cập nhật tên đã chuẩn hóa vào entity
+        danhMuc.setTenDanhMuc(tenDanhMuc);
         danhMuc.setId(id); // Cập nhật lại ID
         DanhMuc updated = dmi.save(danhMuc);
         return ResponseEntity.ok(updated);
