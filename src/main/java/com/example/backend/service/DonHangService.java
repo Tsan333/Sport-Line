@@ -273,6 +273,7 @@ public class DonHangService {
         dto.setSoDienThoaiGiaoHang(dh.getSoDienThoaiGiaoHang());
         dto.setEmailGiaoHang(dh.getEmailGiaoHang());
         dto.setTenNguoiNhan(dh.getTenNguoiNhan());
+        dto.setGhiChu(dh.getGhiChu());
         return dto;
     }
 
@@ -535,66 +536,137 @@ public class DonHangService {
 
 
 
-        public void xacNhanDon(Integer id) {
-            DonHang d = donHangRepository.findById(id).orElseThrow();
-            d.setTrangThai(TrangThaiDonHang.XAC_NHAN.getValue());
-            d.setNgayMua(LocalDate.now());
-            donHangRepository.save(d);
+    public void xacNhanDon(Integer id) {
+        DonHang d = donHangRepository.findById(id).orElseThrow();
 
-            // ✅ THÊM: Trừ số lượng tồn kho sản phẩm
-            trutonKhoSanPham(d);
+        // ✅ THÊM: Kiểm tra tồn kho trước khi xác nhận
+        try {
+            kiemTraTonKho(d);
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể xác nhận đơn hàng: " + e.getMessage());
         }
 
-        // ✅ THÊM: Method trừ tồn kho sản phẩm
-        private void trutonKhoSanPham(DonHang donHang) {
-            if (donHang.getDonHangChiTiets() != null && !donHang.getDonHangChiTiets().isEmpty()) {
-                System.out.println("🔄 Bắt đầu trừ tồn kho sản phẩm cho đơn hàng: " + donHang.getId());
+        d.setTrangThai(TrangThaiDonHang.XAC_NHAN.getValue());
+        d.setNgayMua(LocalDate.now());
+        donHangRepository.save(d);
 
-                for (DonHangChiTiet chiTiet : donHang.getDonHangChiTiets()) {
-                    try {
-                        // Lấy sản phẩm chi tiết từ DB
-                        SanPhamChiTiet spct = sanPhamChiTietRepository.findById(chiTiet.getSanPhamChiTiet().getId())
-                                .orElse(null);
+        // ✅ THÊM: Trừ số lượng tồn kho sản phẩm
+        trutonKhoSanPham(d);
+    }
 
-                        if (spct != null) {
-                            System.out.println("�� Sản phẩm: " + spct.getSanPham().getTenSanPham());
-                            System.out.println("�� Kích thước: " + spct.getKichThuoc().getTenKichThuoc());
-                            System.out.println("🎨 Màu sắc: " + spct.getMauSac().getTenMauSac());
-                            System.out.println("📊 Số lượng tồn kho hiện tại: " + spct.getSoLuong());
-                            System.out.println("�� Số lượng đã bán: " + chiTiet.getSoLuong());
+    // ✅ THÊM: Method kiểm tra tồn kho trước khi xác nhận
+    private void kiemTraTonKho(DonHang donHang) throws Exception {
+        if (donHang.getDonHangChiTiets() == null || donHang.getDonHangChiTiets().isEmpty()) {
+            throw new Exception("Đơn hàng không có chi tiết sản phẩm");
+        }
 
-                            // ✅ Kiểm tra số lượng tồn kho có đủ không
-                            if (spct.getSoLuong() >= chiTiet.getSoLuong()) {
-                                // Trừ số lượng tồn kho
-                                int soLuongCu = spct.getSoLuong();
-                                spct.setSoLuong(spct.getSoLuong() - chiTiet.getSoLuong());
+        System.out.println("🔍 Bắt đầu kiểm tra tồn kho cho đơn hàng: " + donHang.getId());
 
-                                // Lưu lại sản phẩm chi tiết
-                                SanPhamChiTiet savedSpct = sanPhamChiTietRepository.save(spct);
+        List<String> loiTonKho = new ArrayList<>();
 
-                                System.out.println("✅ Đã trừ tồn kho thành công!");
-                                System.out.println("📊 Số lượng cũ: " + soLuongCu + " → Mới: " + savedSpct.getSoLuong());
-                            } else {
-                                System.out.println("⚠️ CẢNH BÁO: Số lượng tồn kho không đủ!");
-                                System.out.println("📊 Tồn kho: " + spct.getSoLuong() + " < Đã bán: " + chiTiet.getSoLuong());
-                            }
-                        } else {
-                            System.out.println("❌ Không tìm thấy sản phẩm chi tiết với ID: " + chiTiet.getSanPhamChiTiet().getId());
-                        }
+        for (DonHangChiTiet chiTiet : donHang.getDonHangChiTiets()) {
+            try {
+                // Lấy sản phẩm chi tiết từ DB
+                SanPhamChiTiet spct = sanPhamChiTietRepository.findById(chiTiet.getSanPhamChiTiet().getId())
+                        .orElse(null);
 
-                        System.out.println("---");
+                if (spct != null) {
+                    System.out.println("�� Kiểm tra sản phẩm: " + spct.getSanPham().getTenSanPham());
+                    System.out.println("�� Kích thước: " + spct.getKichThuoc().getTenKichThuoc());
+                    System.out.println("🎨 Màu sắc: " + spct.getMauSac().getTenMauSac());
+                    System.out.println("📊 Tồn kho: " + spct.getSoLuong() + " | Cần: " + chiTiet.getSoLuong());
 
-                    } catch (Exception e) {
-                        System.err.println("❌ Lỗi khi trừ tồn kho sản phẩm: " + e.getMessage());
-                        e.printStackTrace();
+                    // Kiểm tra số lượng tồn kho có đủ không
+                    if (spct.getSoLuong() < chiTiet.getSoLuong()) {
+                        String loi = String.format("Sản phẩm '%s' (KT: %s, Màu: %s) - Tồn kho: %d, Cần: %d",
+                                spct.getSanPham().getTenSanPham(),
+                                spct.getKichThuoc().getTenKichThuoc(),
+                                spct.getMauSac().getTenMauSac(),
+                                spct.getSoLuong(),
+                                chiTiet.getSoLuong());
+                        loiTonKho.add(loi);
+
+                        System.out.println("⚠️ CẢNH BÁO: Số lượng tồn kho không đủ!");
+                    } else {
+                        System.out.println("✅ Tồn kho đủ");
                     }
+                } else {
+                    String loi = "Không tìm thấy sản phẩm chi tiết với ID: " + chiTiet.getSanPhamChiTiet().getId();
+                    loiTonKho.add(loi);
+                    System.out.println("❌ " + loi);
                 }
 
-                System.out.println("�� Hoàn thành trừ tồn kho sản phẩm!");
-            } else {
-                System.out.println("ℹ️ Đơn hàng không có chi tiết sản phẩm");
+                System.out.println("---");
+
+            } catch (Exception e) {
+                String loi = "Lỗi khi kiểm tra sản phẩm: " + e.getMessage();
+                loiTonKho.add(loi);
+                System.err.println("❌ " + loi);
             }
         }
+
+        // Nếu có lỗi tồn kho, throw exception
+        if (!loiTonKho.isEmpty()) {
+            String message = "Số lượng tồn kho không đủ:\n" + String.join("\n", loiTonKho);
+            System.err.println("❌ " + message);
+            throw new Exception(message);
+        }
+
+        System.out.println("✅ Kiểm tra tồn kho hoàn thành - Tất cả sản phẩm đều đủ số lượng!");
+    }
+
+    // ✅ THÊM: Method trừ tồn kho sản phẩm (cải tiến)
+    private void trutonKhoSanPham(DonHang donHang) {
+        if (donHang.getDonHangChiTiets() != null && !donHang.getDonHangChiTiets().isEmpty()) {
+            System.out.println("🔄 Bắt đầu trừ tồn kho sản phẩm cho đơn hàng: " + donHang.getId());
+
+            for (DonHangChiTiet chiTiet : donHang.getDonHangChiTiets()) {
+                try {
+                    // Lấy sản phẩm chi tiết từ DB
+                    SanPhamChiTiet spct = sanPhamChiTietRepository.findById(chiTiet.getSanPhamChiTiet().getId())
+                            .orElse(null);
+
+                    if (spct != null) {
+                        System.out.println("�� Sản phẩm: " + spct.getSanPham().getTenSanPham());
+                        System.out.println("�� Kích thước: " + spct.getKichThuoc().getTenKichThuoc());
+                        System.out.println("🎨 Màu sắc: " + spct.getMauSac().getTenMauSac());
+                        System.out.println("📊 Số lượng tồn kho hiện tại: " + spct.getSoLuong());
+                        System.out.println("�� Số lượng đã bán: " + chiTiet.getSoLuong());
+
+                        // Kiểm tra lại một lần nữa để đảm bảo an toàn
+                        if (spct.getSoLuong() >= chiTiet.getSoLuong()) {
+                            // Trừ số lượng tồn kho
+                            int soLuongCu = spct.getSoLuong();
+                            spct.setSoLuong(spct.getSoLuong() - chiTiet.getSoLuong());
+
+                            // Lưu lại sản phẩm chi tiết
+                            SanPhamChiTiet savedSpct = sanPhamChiTietRepository.save(spct);
+
+                            System.out.println("✅ Đã trừ tồn kho thành công!");
+                            System.out.println("📊 Số lượng cũ: " + soLuongCu + " → Mới: " + savedSpct.getSoLuong());
+                        } else {
+                            System.err.println("❌ LỖI: Số lượng tồn kho không đủ khi trừ tồn kho!");
+                            System.err.println("📊 Tồn kho: " + spct.getSoLuong() + " < Đã bán: " + chiTiet.getSoLuong());
+                            throw new RuntimeException("Số lượng tồn kho không đủ khi trừ tồn kho");
+                        }
+                    } else {
+                        System.err.println("❌ Không tìm thấy sản phẩm chi tiết với ID: " + chiTiet.getSanPhamChiTiet().getId());
+                        throw new RuntimeException("Không tìm thấy sản phẩm chi tiết");
+                    }
+
+                    System.out.println("---");
+
+                } catch (Exception e) {
+                    System.err.println("❌ Lỗi khi trừ tồn kho sản phẩm: " + e.getMessage());
+                    throw new RuntimeException("Lỗi khi trừ tồn kho: " + e.getMessage());
+                }
+            }
+
+            System.out.println("✅ Hoàn thành trừ tồn kho sản phẩm!");
+        } else {
+            System.out.println("ℹ️ Đơn hàng không có chi tiết sản phẩm");
+        }
+    }
 
 
 //    public void huyDon(Integer idDon, String ghiChu) {
@@ -653,16 +725,17 @@ public class DonHangService {
         // ✅ THÊM: Lưu lý do hủy
         don.setGhiChu(ghiChu);
 
-        // ✅ THÊM: Hoàn lại voucher nếu đơn hàng có sử dụng
+        // ✅ SỬA: Hoàn lại voucher nếu đơn hàng có sử dụng (CHỈ hoàn số lượng, KHÔNG reset voucher)
         if (don.getGiamGia() != null) {
             Voucher voucher = don.getGiamGia();
             // Hoàn lại số lượng voucher
             voucher.setSoLuong(voucher.getSoLuong() + 1);
             voucherRepository.save(voucher);
 
-            // Xóa voucher khỏi đơn hàng
-            don.setGiamGia(null);
-            don.setTongTienGiamGia(0.0); // Reset giảm giá về 0
+
+
+            System.out.println("✅ Đã hoàn lại voucher: " + voucher.getTenVoucher());
+            System.out.println("📊 Số lượng voucher: " + (voucher.getSoLuong() - 1) + " → " + voucher.getSoLuong());
         }
 
         // ✅ SỬA: Chỉ hoàn lại tồn kho cho trạng thái 1, 2, 3
@@ -692,6 +765,10 @@ public class DonHangService {
         }
 
         donHangRepository.save(don);
+
+        System.out.println("✅ Hoàn thành hủy đơn hàng #" + idDon);
+        System.out.println("�� Lý do hủy: " + ghiChu);
+        System.out.println("🔄 Trạng thái: " + trangThaiCu + " → " + don.getTrangThai());
     }
 
 
@@ -806,7 +883,7 @@ public class DonHangService {
         donHangRepository.save(don);
     }
 
-    public void danhDauGiaoKhongThanhCong(Integer idDon) {
+    public void danhDauGiaoKhongThanhCong(Integer idDon, String ghiChu) {
         DonHang don = donHangRepository.findById(idDon)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
@@ -815,8 +892,52 @@ public class DonHangService {
             throw new RuntimeException("Chỉ có thể đánh dấu giao không thành công khi đơn đang giao");
         }
 
+        // Lưu trạng thái trước khi giao hàng không thành công
+        don.setTrangThaiTruocKhiHuy(don.getTrangThai());
+
+        // Cập nhật trạng thái đơn
         don.setTrangThai(TrangThaiDonHang.GIAO_HANG_KHONG_THANH_CONG.getValue());
+
+        // ✅ THÊM: Lưu lý do giao hàng không thành công
+        don.setGhiChu(ghiChu);
+
+        // ✅ SỬA: Hoàn lại voucher nếu đơn hàng có sử dụng (CHỈ hoàn số lượng, KHÔNG reset voucher)
+        if (don.getGiamGia() != null) {
+            Voucher voucher = don.getGiamGia();
+            // Hoàn lại số lượng voucher
+            voucher.setSoLuong(voucher.getSoLuong() + 1);
+            voucherRepository.save(voucher);
+
+            System.out.println("✅ Đã hoàn lại voucher: " + voucher.getTenVoucher());
+            System.out.println("📊 Số lượng voucher: " + (voucher.getSoLuong() - 1) + " → " + voucher.getSoLuong());
+        }
+
+        // ✅ SỬA: Hoàn lại tồn kho vì đơn hàng đã được xác nhận và trừ tồn kho
+        System.out.println("�� Đơn hàng giao hàng không thành công - Bắt đầu hoàn lại tồn kho...");
+
+        for (DonHangChiTiet ct : don.getDonHangChiTiets()) {
+            SanPhamChiTiet sp = ct.getSanPhamChiTiet();
+            if (sp != null) {
+                int soLuongCu = sp.getSoLuong();
+                int soLuongHoanLai = ct.getSoLuong();
+
+                // Hoàn lại tồn kho
+                sp.setSoLuong(soLuongCu + soLuongHoanLai);
+                spctRepo.save(sp);
+
+                System.out.println("✅ Đã hoàn lại tồn kho sản phẩm: " + sp.getSanPham().getTenSanPham());
+                System.out.println("📊 Số lượng cũ: " + soLuongCu + " → Mới: " + sp.getSoLuong());
+                System.out.println("🔄 Hoàn lại: +" + soLuongHoanLai);
+            }
+        }
+
+        System.out.println("✅ Hoàn thành hoàn lại tồn kho!");
+
         donHangRepository.save(don);
+
+        System.out.println("✅ Hoàn thành đánh dấu giao hàng không thành công cho đơn hàng #" + idDon);
+        System.out.println(" Lý do: " + ghiChu);
+        System.out.println("🔄 Trạng thái: " + hienTai.getValue() + " → " + don.getTrangThai());
     }
 
     private boolean isTrangThaiHopLe(TrangThaiDonHang hienTai, TrangThaiDonHang moi) {

@@ -16,6 +16,15 @@ import java.util.Optional;
 
 @Repository
 public interface DonHangChiTietRepository extends JpaRepository<DonHangChiTiet,Integer> {
+
+
+    @Query("SELECT d FROM DonHangChiTiet d WHERE d.donHang.id = :donHangId AND d.sanPhamChiTiet.id = :sanPhamChiTietId AND d.id != :excludeId")
+    List<DonHangChiTiet> findByDonHangAndSanPhamChiTietExcludeId(
+            @Param("donHangId") Integer donHangId,
+            @Param("sanPhamChiTietId") Integer sanPhamChiTietId,
+            @Param("excludeId") Integer excludeId
+    );
+
     List<DonHangChiTiet> findBySanPhamChiTiet_Id(Integer sanPhamChiTietId);
 
     @Modifying

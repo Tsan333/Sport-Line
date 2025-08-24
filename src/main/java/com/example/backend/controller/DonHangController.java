@@ -98,6 +98,12 @@ public class DonHangController {
         return ResponseEntity.ok(donHangService.filterByTrangThaiAndLoai(6, "online"));
     }
 
+    @GetMapping("/donhang/giaohangthatbai")
+    public ResponseEntity<List<DonHangDTO>> GHTB() {
+        // Ví dụ: chỉ lấy trạng thái=1, loaiDonHang="online"
+        return ResponseEntity.ok(donHangService.filterByTrangThaiAndLoai(7, "online"));
+    }
+
     // Thêm endpoint tìm kiếm đơn hàng POS
     @GetMapping("/donhang/search-pos")
     public ResponseEntity<List<DonHangDTO>> searchDonHangPOS(
@@ -202,10 +208,15 @@ public class DonHangController {
     // ✅ 2. Xác nhận đơn
 
     @PutMapping("/donhang/xac-nhan/{id}")
-    public ResponseEntity<DonHangDTO> xacNhanDon(@PathVariable Integer id) {
-        donHangService.xacNhanDon(id);
-        DonHang updated = donHangService.layChiTietDon(id);
-        return ResponseEntity.ok(new DonHangDTO(updated));
+    public ResponseEntity<?> xacNhanDon(@PathVariable Integer id) {
+        try {
+            donHangService.xacNhanDon(id);
+            DonHang updated = donHangService.layChiTietDon(id);
+            return ResponseEntity.ok(new DonHangDTO(updated));
+        } catch (RuntimeException e) {
+            // ✅ THÊM: Trả về error message như KichThuocController
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     // ❌ 3. Hủy đơn
@@ -305,9 +316,12 @@ public class DonHangController {
 
     // ❌ 9. Giao hàng không thành công
     @PutMapping("/donhang/giao-khong-thanh-cong/{id}")
-    public ResponseEntity<DonHangDTO> giaoKhongThanhCong(@PathVariable Integer id) {
+    public ResponseEntity<DonHangDTO> giaoKhongThanhCong(
+            @PathVariable Integer id,
+            @RequestBody HuyDonRequest request  // Thêm request body
+    ) {
         try {
-            donHangService.danhDauGiaoKhongThanhCong(id);
+            donHangService.danhDauGiaoKhongThanhCong(id, request.getGhiChu()); // Truyền lý do
             DonHang updated = donHangService.layChiTietDon(id);
             return ResponseEntity.ok(new DonHangDTO(updated));
         } catch (Exception e) {
